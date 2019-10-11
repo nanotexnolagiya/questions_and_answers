@@ -10,6 +10,8 @@
       >
         {{ m.name }}
       </router-link>
+      <span class="list-group-item list-group-item-action"></span>
+      <router-link to="/profile" class="list-group-item list-group-item-action">Профиль</router-link>
       <a
         href="#"
         @click.prevent="logout"
@@ -29,6 +31,11 @@ export default {
     return {
       menu: [
         { name: 'Категории', path: '/categories', role: 'admin' },
+        { name: 'Свойства', path: '/properties', role: 'admin' },
+        { name: 'Заявки для передачи вещи', path: '/application-transfer', role: 'admin' },
+        { name: 'Вещи', path: '/things', role: 'admin' },
+        { name: 'Заявки для получении вещи', path: '/application-recieve', role: 'admin' },
+        { name: 'Пользователи', path: '/users', role: 'admin' },
         { name: 'User', path: '/user', role: 'user' },
         { name: 'Supplier', path: '/supplier', role: 'supplier' },
         { name: 'Storekeeper', path: '/storekeeper', role: 'storekeeper' },
