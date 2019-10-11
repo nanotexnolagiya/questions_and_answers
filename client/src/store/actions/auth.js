@@ -1,0 +1,5 @@
+export const AUTH_SIGNUP = 'AUTH_SIGNUP'
+export const AUTH_SIGNIN = 'AUTH_SIGNIN'
+export const AUTH_LOGOUT = 'AUTH_LOGOUT'
+export const AUTH_REQUEST = 'AUTH_REQUEST'
+export const HAS_LOADED_ONCE = 'HAS_LOADED_ONCE'
