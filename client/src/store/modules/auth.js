@@ -49,7 +49,9 @@ const actions = {
         data: user
       })
 
-      localStorage.setItem('user-token', res.data.token)
+      if (user.remember) {
+        localStorage.setItem('user-token', res.data.token)
+      }
 
       commit(AUTH_REQUEST, res.data)
       dispatch(USER_REQUEST)

@@ -6,6 +6,8 @@ import Signin from '@/pages/Signin'
 import Pages from '@/pages/Pages'
 import Category from '@/pages/admin/categories/List'
 import CreateCategory from '@/pages/admin/categories/Create'
+import AppTransfer from '@/pages/admin/app-transfer/List'
+import AppTransferCreate from '@/pages/admin/app-transfer/Create'
 import { USER_REQUEST } from 'actions/user'
 import { HAS_LOADED_ONCE } from 'actions/auth'
 import store from '../store'
@@ -72,6 +74,19 @@ const router = new Router({
       meta: {
         title: 'Изменить категорию'
       }
+    },
+    {
+      path: '/application-transfer',
+      component: AppTransfer,
+      beforeEnter: multiguard([isAuth, isRole('admin')]),
+      meta: {
+        title: 'Заявки для передачи вещи'
+      }
+    },
+    {
+      path: '/application-transfer/create',
+      component: AppTransferCreate,
+      beforeEnter: multiguard([isAuth, isRole('admin')])
     },
     {
       path: '/signin',

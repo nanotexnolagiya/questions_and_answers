@@ -54,8 +54,22 @@ export default {
       phone: '',
       cpassword: '',
       password: '',
+      countryCode: '+998',
       privacy: false,
+      appId: '1945009795579340',
+      fbAppEventsEnabled: false,
+      redirect: 'localhost:8080/signup',
+      state: 'csrf_token',
+      version: 'v1.0',
+      loginType: 'PHONE',
+      language: 'en_US',
+      autoInit: true,
       errors: []
+    }
+  },
+  mounted () {
+    if (!window.AccountKit && this.autoInit) {
+      this.initAccountKit()
     }
   },
   methods: {
@@ -75,10 +89,69 @@ export default {
         this.errors.push('Пароли не совпадает')
       }
       if (this.errors.length === 0) {
-        this.$store.dispatch(AUTH_SIGNUP, { phone, name, password }).then(() => {
-          location.href = '/'
-        })
+        this.verifyPhone(
+          {
+            countryCode: this.countryCode,
+            phoneNumber: this.phone,
+            display: 'modal'
+          },
+          this.signupCallback
+        )
       }
+    },
+    signupCallback ({status, code, state}) {
+      const { name, password, phone } = this
+
+      if (status === 'PARTIALLY_AUTHENTICATED') {
+        if (this.state === state) {
+          this.$store.dispatch(AUTH_SIGNUP, { phone, name, password, code }).then(() => {
+            this.$router.push('/')
+          })
+        }
+        // Send code to server to exchange for access token
+      } else if (status === 'NOT_AUTHENTICATED') {
+        // handle authentication failure
+      } else if (status === 'BAD_PARAMS') {
+        // handle bad parameters
+      }
+    },
+    initAccountKit () {
+      const tag = document.createElement('script')
+      tag.setAttribute(
+        'src',
+        `https://sdk.accountkit.com/ru_RU/sdk.js`
+      )
+      tag.setAttribute('id', 'account-kit')
+      tag.setAttribute('type', 'text/javascript')
+      tag.onload = () => {
+        /* eslint-disable camelcase */
+        window.AccountKit_OnInteractive = this.onLoad.bind(this)
+        /* eslint-enable camelcase */
+      }
+      document.head.appendChild(tag)
+    },
+    /**
+     * Implementation of AccountKit_OnInteractive
+     * Initializes the facebook authentication kit calling the init function.
+     * @see https://developers.facebook.com/docs/accountkit/webjs/reference
+     */
+    onLoad () {
+      const { appId, fbAppEventsEnabled, redirect, state, version } = this
+      window.AccountKit.init({
+        appId,
+        debug: true,
+        // display,
+        fbAppEventsEnabled,
+        redirect,
+        state,
+        version
+      })
+    },
+    /** console.log
+     * @param {*} loginParams @see https://developers.facebook.com/docs/accountkit/webjs/reference
+     */
+    verifyPhone (loginParams, callback) {
+      window.AccountKit.login('PHONE', loginParams, callback)
     }
   }
 }

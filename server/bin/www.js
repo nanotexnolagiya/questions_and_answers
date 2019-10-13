@@ -78,7 +78,7 @@ const onListening = async () => {
       await Users.create({
         role_id: 1,
         name: 'Admin',
-        phone: '+998998040226',
+        phone: '+998123456789',
         password: hash
       })
     }

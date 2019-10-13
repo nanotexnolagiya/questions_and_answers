@@ -1,8 +1,7 @@
-import { LOADING, ERRORS, MODAL_BACKGROUND } from '../actions/common'
+import { LOADING, ERRORS } from '../actions/common'
 
 const state = {
   loading: false,
-  modalBackground: false,
   errors: []
 }
 
@@ -18,9 +17,6 @@ const actions = {
   },
   [ERRORS]: ({ commit }, payload) => {
     commit(ERRORS, payload)
-  },
-  [MODAL_BACKGROUND]: ({ commit }, payload) => {
-    commit(MODAL_BACKGROUND, payload)
   }
 }
 
@@ -30,9 +26,6 @@ const mutations = {
   },
   [ERRORS]: (state, payload) => {
     state.errors = payload
-  },
-  [MODAL_BACKGROUND]: (state, payload) => {
-    state.modalBackground = payload
   }
 }
 

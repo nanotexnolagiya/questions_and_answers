@@ -20,15 +20,26 @@ const axios = require('axios')
  * @apiSuccess {String} role  User role
  */
 const signup = async (req, res) => {
-  const { name, phone, password, access_token } = req.body
+  const { name, phone, password, code } = req.body
   try {
-    // const resBody = await axios.get(
-    //   `https://graph.accountkit.com/${config.FACEBOOK_APP_VERSION}/me?access_token=${access_token}`
-    // )
+    const resToken = await axios.get(`https://graph.accountkit.com/${config.FACEBOOK_APP_VERSION}/access_token`, {
+      params: {
+        grant_type: 'authorization_code',
+        code,
+        access_token: ['AA', config.FACEBOOK_APP_ID, config.FACEBOOK_APP_SECRET].join('|')
+      }
+    })
+    const resBody = await axios.get(
+      `https://graph.accountkit.com/${config.FACEBOOK_APP_VERSION}/me`, {
+        params: {
+          access_token: resToken.data.access_token
+        }
+      }
+    )
 
-    // const confirmPhone = resBody.data.phone.number
+    const confirmPhone = resBody.data.phone.national_number
 
-    if (true) { // phone === confirmPhone 
+    if (phone === confirmPhone) { // phone === confirmPhone 
       const hash = await bcrypt.hash(password, 10)
 
       let hasUser = await Users.findOne({

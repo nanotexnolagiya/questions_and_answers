@@ -56,7 +56,7 @@ export default {
   },
   methods: {
     signin () {
-      const { password } = this
+      const { password, remember } = this
       let phone = this.phone
       phone = phone.replace(/\s/g, '')
       this.errors = []
@@ -68,8 +68,8 @@ export default {
 
       if (this.errors.length === 0) {
         phone = '+998' + phone
-        this.$store.dispatch(AUTH_SIGNIN, { phone, password }).then(() => {
-          location.href = '/'
+        this.$store.dispatch(AUTH_SIGNIN, { phone, password, remember }).then(() => {
+          this.$router.push('/')
         })
       }
     }

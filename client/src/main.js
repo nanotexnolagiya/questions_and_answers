@@ -7,7 +7,7 @@ import { VueEditor } from 'vue2-editor'
 import treeView from 'components/lib/tree-view'
 import loading from 'components/lib/loading'
 import pageLayout from 'components/lib/page-layout'
-import { AUTH_LOGOUT } from 'actions/auth'
+// import { AUTH_LOGOUT } from 'actions/auth'
 
 Vue.config.productionTip = false
 
@@ -43,8 +43,8 @@ window.onerror = function (message, source, line, column, error) {
 window.addEventListener('unhandledrejection', function (e) {
   if (e.reason.response) {
     if (e.reason.response.status === 401) {
-      store.dispatch(AUTH_LOGOUT)
-      location.href = '/signin'
+      // store.dispatch(AUTH_LOGOUT)
+      // location.href = '/signin'
     }
   }
 })

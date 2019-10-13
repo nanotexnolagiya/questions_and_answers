@@ -18,39 +18,59 @@ const getters = {
 }
 
 const actions = {
-  [FETCH_CATEGORIES_TREE]: async ({ commit }) => {
+  [FETCH_CATEGORIES_TREE]: async ({ commit, getters }) => {
     try {
-      const res = await apiCall.get('/categories/tree')
+      const res = await apiCall.get('/categories/tree', {
+        params: {
+          token: getters.token
+        }
+      })
       commit(FETCH_CATEGORIES, res.data.data)
     } catch (error) {
       throw error
     }
   },
-  [FETCH_CATEGORIES]: async ({ commit }) => {
+  [FETCH_CATEGORIES]: async ({ commit, getters }) => {
     try {
-      const res = await apiCall.get('/categories')
+      const res = await apiCall.get('/categories', {
+        params: {
+          token: getters.token
+        }
+      })
       commit(FETCH_CATEGORIES, res.data.data)
     } catch (error) {
       throw error
     }
   },
-  [ADD_CATEGORY]: async (store, category) => {
+  [ADD_CATEGORY]: async ({ getters }, category) => {
     try {
-      await apiCall.post('/categories', category)
+      await apiCall.post('/categories', category, {
+        params: {
+          token: getters.token
+        }
+      })
     } catch (error) {
       throw error
     }
   },
-  [UPDATE_CATEGORY]: async ({ commit, dispatch }, category) => {
+  [UPDATE_CATEGORY]: async ({ getters }, category) => {
     try {
-      await apiCall.put(`/categories/${category.id}`, category)
+      await apiCall.put(`/categories/${category.id}`, category, {
+        params: {
+          token: getters.token
+        }
+      })
     } catch (error) {
       throw error
     }
   },
-  [REMOVE_CATEGORY]: async ({ commit, dispatch }, id) => {
+  [REMOVE_CATEGORY]: async ({ getters }, id) => {
     try {
-      await apiCall.delete(`/categories/${id}`)
+      await apiCall.delete(`/categories/${id}`, {
+        params: {
+          token: getters.token
+        }
+      })
     } catch (error) {
       throw error
     }
