@@ -12,13 +12,16 @@
 <script>
 import { mapGetters } from 'vuex'
 import { FETCH_CATEGORIES_TREE } from 'actions/categories'
+import { LOADING } from 'actions/common'
 
 export default {
   computed: {
     ...mapGetters(['categories']),
   },
-  created () {
-    this.$store.dispatch(FETCH_CATEGORIES_TREE)
+  async created () {
+    await this.$store.dispatch(LOADING, true)
+    await this.$store.dispatch(FETCH_CATEGORIES_TREE)
+    await this.$store.dispatch(LOADING, false)
   }
 }
 </script>

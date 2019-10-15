@@ -23,7 +23,7 @@ const all = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       ok: false,
-      error: error.message
+      message: error.message
     });
   }
 };
@@ -44,7 +44,7 @@ const tree = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       ok: false,
-      error: error.message
+      message: error.message
     });
   }
 };
@@ -67,7 +67,7 @@ const add = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       ok: false,
-      error: error.message
+      message: error.message
     });
   }
 };
@@ -97,7 +97,7 @@ const update = async (req, res) => {
     console.log(error);
     res.status(500).json({
       ok: false,
-      error: error.message
+      message: error.message
     });
   }
 };
@@ -118,7 +118,7 @@ const remove = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       ok: false,
-      error: error.message
+      message: error.message
     });
   }
 };

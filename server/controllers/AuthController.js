@@ -86,7 +86,7 @@ const signup = async (req, res) => {
   } catch (error) {
     res.status(400).json({
       ok: false,
-      error: error.message
+      message: error.message
     })
   }
 }
@@ -147,7 +147,7 @@ const signin = async (req, res) => {
   } catch (error) {
     res.status(400).json({
       ok: false,
-      error: error.message
+      message: error.message
     })
   }
 }

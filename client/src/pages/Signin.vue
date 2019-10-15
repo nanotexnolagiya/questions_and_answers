@@ -70,6 +70,12 @@ export default {
         phone = '+998' + phone
         this.$store.dispatch(AUTH_SIGNIN, { phone, password, remember }).then(() => {
           this.$router.push('/')
+        }).catch(err => {
+          if (err.response) {
+            if (!err.response.data.ok) {
+              this.errors.push(err.response.data.message)
+            }
+          }
         })
       }
     }

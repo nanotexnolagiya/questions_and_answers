@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       scopes: {
         userPublic: {
-          attributes: ['name', 'phone'],
+          attributes: ['id', 'name', 'phone'],
           include: [
             { model: sequelize.models.Roles.scope('rolePublic') }
           ]

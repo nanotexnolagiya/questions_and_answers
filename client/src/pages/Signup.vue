@@ -52,7 +52,7 @@ export default {
     return {
       name: '',
       phone: '',
-      cpassword: '',
+      cpassword: null,
       password: '',
       countryCode: '+998',
       privacy: false,

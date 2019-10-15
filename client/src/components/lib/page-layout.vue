@@ -16,7 +16,7 @@
         <button class="btn mr-auto" @click.prevent="sidebar = !sidebar">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <span class="text-dark" v-if="user">Привет: {{ user.name }}</span>
+        <span class="text-dark" v-if="profile">Привет: {{ profile.name }}</span>
       </nav>
 
       <div class="container-fluid p-3">
@@ -41,7 +41,7 @@ export default {
     navigation
   },
   computed: {
-    ...mapGetters(['role', 'user'])
+    ...mapGetters(['role', 'profile'])
   }
 }
 </script>

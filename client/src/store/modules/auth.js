@@ -62,9 +62,7 @@ const actions = {
   [AUTH_LOGOUT]: async ({ commit }) => {
     try {
       localStorage.clear()
-      console.log('localStorage clear')
       commit(AUTH_LOGOUT)
-      console.log('store clear')
     } catch (error) {
       throw error
     }

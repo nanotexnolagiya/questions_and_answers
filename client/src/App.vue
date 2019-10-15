@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <loading :load="loading" v-if="showLoading" />
     <router-view />
   </div>
 </template>
@@ -7,12 +8,31 @@
 <script>
 import { mapGetters } from 'vuex'
 import { USER_REQUEST } from 'actions/user'
+import loading from 'components/lib/loading'
 
 export default {
   name: 'app',
-  components: {},
+  data () {
+    return {
+      showLoading: false
+    }
+  },
+  components: {
+    loading
+  },
   computed: {
     ...mapGetters(['loading'])
+  },
+  watch: {
+    loading (newVal) {
+      if (!newVal) {
+        setTimeout(() => {
+          this.showLoading = newVal
+        }, 500)
+      } else {
+        this.showLoading = newVal
+      }
+    }
   },
   created () {
     if (this.$store.getters.isAuthenticated) {

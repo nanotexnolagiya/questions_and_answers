@@ -30,6 +30,8 @@
 
 <script>
 import { REMOVE_CATEGORY, FETCH_CATEGORIES_TREE } from 'actions/categories'
+import { LOADING } from 'actions/common'
+
 export default {
   props: ['data'],
   data () {
@@ -48,10 +50,10 @@ export default {
         this.loading = false
       }, 2000)
     },
-    remove (id) {
-      this.$store.dispatch(REMOVE_CATEGORY, id).then(() => {
-        this.$store.dispatch(FETCH_CATEGORIES_TREE)
-      })
+    async remove (id) {
+      await this.$store.dispatch(LOADING, true)
+      await this.$store.dispatch(REMOVE_CATEGORY, id)
+      await this.$store.dispatch(FETCH_CATEGORIES_TREE)
     }
   }
 }

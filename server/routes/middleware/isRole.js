@@ -9,7 +9,7 @@ module.exports = roles => {
     } else {
       return res.status(403).json({
         ok: false,
-        error: 'Access denied'
+        message: 'Access denied'
       })
     }
   }

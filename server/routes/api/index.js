@@ -12,6 +12,7 @@ const {
   // ThingController,
   // StatusController,
   UserController,
+  RoleController,
   // SupplierController
 } = require('../../controllers')
 
@@ -25,6 +26,7 @@ router.use(checkAuth)
 router.use('/categories', CategoryController)
 // router.use('/properties')
 router.use('/users', UserController)
+router.use('/roles', RoleController)
 // router.use('/statuses')
 // router.use('/things')
 

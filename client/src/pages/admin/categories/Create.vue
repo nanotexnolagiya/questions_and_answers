@@ -12,7 +12,7 @@
         </div>
         <div class="form-group">
           <select class="form-control" v-model="selectedCategory">
-            <option value="0" disabled v-if="!updateCategory"> -- Выбрать категорию -- </option>
+            <option value="0" disabled v-if="!updatedPage"> -- Выбрать категорию -- </option>
             <option 
               v-for="cat in categories" 
               :key="cat.id" 
@@ -20,7 +20,7 @@
             >{{ cat.name }}</option>
           </select>
         </div>
-        <button type="submit" class="btn btn-success">{{ updateCategory ? 'Обновить' : 'Сохранить' }}</button>
+        <button type="submit" class="btn btn-success">{{ updatedPage ? 'Обновить' : 'Сохранить' }}</button>
       </form>
     </div>
   </pageLayout>
@@ -30,11 +30,12 @@
 import validator from 'validator'
 import { mapGetters } from 'vuex'
 import { FETCH_CATEGORIES, ADD_CATEGORY, UPDATE_CATEGORY } from 'actions/categories'
+import { LOADING } from 'actions/common'
 
 export default {
   data () {
     return {
-      updateCategory: false,
+      updatedPage: false,
       selectedCategory: 0,
       categoryName: '',
       errors: []
@@ -49,7 +50,7 @@ export default {
   methods: {
     save () {
       this.errors = []
-      if (!this.updateCategory) {
+      if (!this.updatedPage) {
         if (!validator.isLength(this.categoryName, { min: 3, max: 255 })) this.errors.push('Введите название категории')
 
         if (this.errors.length === 0) {
@@ -75,11 +76,12 @@ export default {
       }
     }
   },
-  created () {
+  async created () {
     const categoryId = this.$route.params.categoryId
+    await this.$store.dispatch(LOADING, true)
 
     if (categoryId) {
-      this.updateCategory = true
+      this.updatedPage = true
       this.$store.dispatch(FETCH_CATEGORIES).then(() => {
         if (this.category) {
           this.selectedCategory = this.category.parentId
@@ -89,6 +91,7 @@ export default {
     } else {
       this.$store.dispatch(FETCH_CATEGORIES)
     }
+    await this.$store.dispatch(LOADING, false)
   }
 }
 </script>
