@@ -16,11 +16,11 @@ module.exports = (sequelize, DataTypes) => {
   Categories.associate = function(models) {
     models.Categories.belongsToMany(models.Properties, {
       through: models.CategoryProperties,
-      foreignKey: 'category_id'
+      foreignKey: 'categoryId'
     })
 
     models.Categories.hasMany(models.Things, {
-      foreignKey: 'category_id',
+      foreignKey: 'categoryId',
       sourceKey: 'id'
     })
   }

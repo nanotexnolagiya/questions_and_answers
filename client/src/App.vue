@@ -104,6 +104,27 @@ table tr td i {
   margin-right: 5px;
 }
 
+.alert ul {
+  padding-left: 17px;
+  margin-bottom: 0;
+
+  li {
+    font-size: 12px;
+    font-weight: 700;
+    font-family: sans-serif;
+  }
+}
+
+.upload-results {
+  display: flex;
+  flex-wrap: wrap;
+
+  & > img {
+    flex: 0 0 20%;
+    max-width: 20%;
+  }
+}
+
 @media (min-width: 768px) {
   #sidebar-wrapper {
     margin-left: 0;

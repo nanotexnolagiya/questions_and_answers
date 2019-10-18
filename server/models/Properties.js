@@ -8,19 +8,27 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER
       },
-      name: DataTypes.STRING
+      name: DataTypes.STRING,
+      type: DataTypes.STRING
     },
-    {}
+    {
+      scopes: {
+        publicProperties: {
+          include: [
+            { model: sequelize.models.Categories }
+          ]
+        }
+      }
+    }
   )
   Properties.associate = function(models) {
     models.Properties.belongsToMany(models.Categories, {
       through: models.CategoryProperties,
-      foreignKey: 'property_id'
+      foreignKey: 'propertyId'
     })
-
-    models.Properties.hasMany(models.PropertyValues, {
-      foreignKey: 'property_id',
-      sourceKey: 'id'
+    models.Properties.belongsToMany(models.Things, {
+      through: models.ThingPropertyValues,
+      foreignKey: 'propertyId'
     })
   }
   return Properties

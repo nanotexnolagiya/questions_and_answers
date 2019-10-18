@@ -12,10 +12,9 @@ app.use(json())
 app.use(morgan('dev'))
 app.use(cors())
 app.use(express.static(path.join(__dirname, 'public')))
-
 app.use('/api/v1', routes.api)
 
-app.use((req, res, next) => {
+app.use('/api/v1', (req, res, next) => {
   const error = new Error('Not found')
   error.status = 404
   next(error)
@@ -28,5 +27,9 @@ app.use((error, req, res, next) => {
     message: error.message
   })
 })
+
+// app.get('/*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'client/index.html'));
+// })
 
 module.exports = app

@@ -7,6 +7,7 @@ import categories from './modules/categories'
 import appTransfer from './modules/appTransfer'
 import appRecieve from './modules/appRecieve'
 import things from './modules/things'
+import properties from './modules/propertioes'
 
 Vue.use(Vuex)
 
@@ -20,7 +21,8 @@ export default new Vuex.Store({
     categories,
     appTransfer,
     appRecieve,
-    things
+    things,
+    properties
   },
   strict: debug
 })

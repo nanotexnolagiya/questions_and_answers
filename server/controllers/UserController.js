@@ -21,14 +21,14 @@ const me = async (req, res) => {
     if (req.userData) {
       const user = await Users.scope("userPublic").findOne({
         where: {
-          id: req.userData.user_id
+          id: req.userData.userId
         },
         include: [
           { model: Roles.scope('rolePublic') }
         ]
       });
 
-      if(!user) res.status(404).json({ok: false, message: 'user not found'});
+      if(!user) res.status(401).json({ok: false, message: 'user not found'});
 
       res.status(200).json(user);
     }
@@ -77,7 +77,7 @@ const add = async (req, res) => {
       name,
       phone,
       password: hash,
-      role_id: role
+      roleId: role
     });
 
     res.status(200).json({
@@ -132,7 +132,7 @@ const update = async (req, res) => {
 
     if (name) user.name = name
     if (phone) user.phone = phone
-    if (role) user.role_id = role
+    if (role) user.roleId = role
 
     await user.save()
 
@@ -151,7 +151,7 @@ router.get('/', all);
 router.post('/', add);
 router.delete('/:id', remove);
 router.put('/:id', update);
-router.post('/me', me);
+router.get('/me', me);
 
 
 module.exports = router;

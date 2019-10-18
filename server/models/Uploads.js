@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   Uploads.associate = function(models) {
     models.Uploads.belongsToMany(models.ApplicationTransfer, {
       through: models.ApplicationTransferUploads,
-      foreignKey: 'upload_id'
+      foreignKey: 'uploadId'
     })
   }
   return Uploads

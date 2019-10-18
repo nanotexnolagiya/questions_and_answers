@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER
       },
       value: DataTypes.STRING,
-      propertyValueId: DataTypes.INTEGER,
+      propertyId: DataTypes.INTEGER,
       thingId: DataTypes.INTEGER
     },
     {}

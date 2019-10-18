@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER
       },
-      role_id: {
+      roleId: {
         allowNull: false,
         type: DataTypes.INTEGER
       },
@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
   )
   Users.associate = function(models) {
     models.Users.belongsTo(models.Roles, {
-      foreignKey: 'role_id',
+      foreignKey: 'roleId',
       targetKey: 'id'
     })
   }

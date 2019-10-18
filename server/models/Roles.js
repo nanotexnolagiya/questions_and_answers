@@ -12,19 +12,22 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         primaryKey: true,
         unique: true
+      },
+      name: {
+        type: DataTypes.STRING
       }
     },
     {
       scopes: {
         rolePublic: {
-          attributes: ['code'],
+          attributes: ['code', 'name'],
         }
       },
     }
   )
   Roles.associate = function(models) {
     // models.Roles.hasMany(models.Users, {
-    //   foreignKey: 'role_id'
+    //   foreignKey: 'roleId'
     // });
   }
   return Roles

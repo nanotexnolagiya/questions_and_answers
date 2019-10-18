@@ -15,7 +15,7 @@
             <div class="input-group-prepend">
               <span class="input-group-text" id="phone">+998</span>
             </div>
-            <input type="text" class="form-control" placeholder="Телефон" aria-label="Телефон" aria-describedby="phone" v-model="phone">
+            <input type="number" class="form-control" placeholder="Телефон" aria-label="Телефон" aria-describedby="phone" v-model="phone">
           </div>
         </div>
         <div class="form-group">
@@ -25,7 +25,7 @@
               v-for="r in roles" 
               :key="r.id" 
               :value="r.id"
-            >{{ r.code }}</option>
+            >{{ r.name }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -91,11 +91,10 @@ export default {
       const { name, password, cpassword, selectedRole, newPassword } = this
       let phone = this.phone
       phone = phone.replace(/\s/g, '')
-      phone = '+998' + phone
       this.errors = []
       if (!validator.isLength(name, { min: 3, max: 255 })) {
         this.errors.push('Имя должен быть больше 3 и менше 255')
-      } else if (!validator.isNumeric(phone) && phone.length !== 9) {
+      } else if (phone.length !== 9) {
         this.errors.push('Не правилный номер телефона')
       } else if (!selectedRole) {
         this.errors.push('Выберите роль')
@@ -107,6 +106,7 @@ export default {
         this.errors.push('Новый пароль должен быть больше 6 и менше 255')
       }
       if (this.errors.length === 0) {
+        phone = '+998' + phone
         if (!this.updatedPage) {
           this.$store.dispatch(ADD_USER, {
             name,

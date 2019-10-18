@@ -30,14 +30,20 @@ export default {
   data () {
     return {
       menu: [
+        // Admin
         { name: 'Категории', path: '/categories', role: 'admin' },
         { name: 'Свойства', path: '/properties', role: 'admin' },
-        { name: 'Заявки для передачи вещи', path: '/application-transfer', role: 'admin' },
+        { name: 'Заявки для передачи вещи', path: '/app-transfers', role: 'admin' },
         { name: 'Вещи', path: '/things', role: 'admin' },
         { name: 'Заявки для получении вещи', path: '/application-recieve', role: 'admin' },
         { name: 'Пользователи', path: '/users', role: 'admin' },
+        { name: 'Медиа', path: '/media', role: 'admin' },
+        { name: 'Роли', path: '/roles', role: 'admin' },
+        // User
         { name: 'User', path: '/user', role: 'user' },
+        // Supplier
         { name: 'Supplier', path: '/supplier', role: 'supplier' },
+        // Storekeeper
         { name: 'Storekeeper', path: '/storekeeper', role: 'storekeeper' },
       ]
     }

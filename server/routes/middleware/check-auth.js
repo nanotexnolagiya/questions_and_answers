@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const config = require("../../config");
+const { Users } = require("../../models");
 
 module.exports = async (req, res, next) => {
   const token =
@@ -8,12 +9,19 @@ module.exports = async (req, res, next) => {
     req.headers["x-access-token"] ||
     req.headers["token"];
   try {
-    let decoded = jwt.verify(token, config.SECRET_KEY);
+    let decoded = await jwt.verify(token, config.SECRET_KEY);
+    const user = await Users.findOne({
+      where: {
+        id: decoded.userId
+      }
+    })
+
+    if(!user) throw new Error('Unauthorizated') 
 
     req.userData = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({
+    res.status(401).json({
       ok: false,
       message: "Unauthorizated"
     });

@@ -58,7 +58,7 @@ const signup = async (req, res) => {
           name,
           phone,
           password: hash,
-          role_id: currRole.id
+          roleId: currRole.id
         })
 
         console.log(user);
@@ -66,7 +66,7 @@ const signup = async (req, res) => {
         const token = await jwt.sign(
           {
             role: currRole.code,
-            user_id: user.id
+            userId: user.id
           },
           config.SECRET_KEY,
           { expiresIn: '1d' }
@@ -127,7 +127,7 @@ const signin = async (req, res) => {
         const token = await jwt.sign(
           {
             role: user.Role.code,
-            user_id: user.id
+            userId: user.id
           },
           config.SECRET_KEY,
           { expiresIn: '1d' }

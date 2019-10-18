@@ -17,7 +17,7 @@
           <tr v-for="u in users" :key="u.id" v-if="u.id !== profile.id">
             <td>{{ u.name }}</td>
             <td>{{ u.phone }}</td>
-            <td>{{ u.Role.code }}</td>
+            <td>{{ u.Role.name }}</td>
             <td>
               <div class="d-flex">
                 <router-link :to="`/users/${u.id}`">

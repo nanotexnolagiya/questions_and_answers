@@ -1,31 +1,35 @@
 <template>
   <pageLayout>
     <div class="content-actions mb-3">
-      <router-link to="/application-transfer/create" class="btn btn-success" tag="button">Добавить заявку</router-link>
+      <router-link to="/app-transfers/create" class="btn btn-success" tag="button">Добавить заявку</router-link>
     </div>
-    <div class="table-responsive">
+    <div class="table-responsive" v-if="appTransfers && appTransfers.length > 0">
       <table class="table">
         <thead class="thead-dark">
           <tr>
             <th scope="col">Картина</th>
             <th scope="col">Подробно</th>
+            <th scope="col">Пользователь</th>
+            <th scope="col">Доставшик</th>
             <th scope="col">Статус</th>
             <th scope="col">Действии</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <tr v-for="appTransfer in appTransfers" :key="appTransfer.id">
             <td>
-              <img src="https://images.unsplash.com/photo-1568069427790-346e73309008?ixlib=rb-1.2.1&q=85&fm=jpg&crop=entropy&cs=srgb&ixid=eyJhcHBfaWQiOjE0NTg5fQ" alt="">
+              <img v-if="appTransfer.Uploads && appTransfer.Uploads.length > 0" :src="`http://localhost:3330${appTransfer.Uploads[0].path}`" alt="">
             </td>
-            <td>Lorem ip sum doler is ammet. Lorem ip sum doler is ammet. Lorem ip sum doler is ammet.</td>
-            <td>Publish</td>
+            <td v-text="appTransfer.text"></td>
+            <td v-text="appTransfer.ApplicationTransferUser ? appTransfer.ApplicationTransferUser.name : 'Неизвестно'"></td>
+            <td v-text="appTransfer.ApplicationTransferSupplier ? appTransfer.ApplicationTransferSupplier.name : 'Неизвестно'"></td>
+            <td v-text="appTransfer.Status.name"></td>
             <td>
               <div class="d-flex">
-                <a href="">
-                  <i class="fas fa-edit text-warning"></i>
-                </a>
-                <a href="">
+                <router-link :to="`/app-transfers/${appTransfer.id}`">
+                  <i class="fas fa-edit text-warning" ></i>
+                </router-link>
+                <a :href="`#/${appTransfer.id}`" @click.prevent="remove(appTransfer.id)">
                   <i class="fas fa-trash text-danger"></i>
                 </a>
               </div>
@@ -34,9 +38,30 @@
         </tbody>
       </table>
     </div>
+    <div class="alert alert-info" v-else>Заявки не найдены</div>
   </pageLayout>
 </template>
 
 <script>
-export default {}
+import { mapGetters } from 'vuex'
+import { FETCH_APP_TRANSFERS, REMOVE_APP_TRANSFER } from '../../../store/actions/appTransfer'
+import { LOADING } from 'actions/common'
+export default {
+  computed: {
+    ...mapGetters(['appTransfers'])
+  },
+  methods: {
+    async remove (id) {
+      await this.$store.dispatch(LOADING, true)
+      await this.$store.dispatch(REMOVE_APP_TRANSFER, id)
+      await this.$store.dispatch(FETCH_APP_TRANSFERS)
+      await this.$store.dispatch(LOADING, false)
+    }
+  },
+  async created () {
+    await this.$store.dispatch(LOADING, true)
+    await this.$store.dispatch(FETCH_APP_TRANSFERS)
+    await this.$store.dispatch(LOADING, false)
+  }
+}
 </script>

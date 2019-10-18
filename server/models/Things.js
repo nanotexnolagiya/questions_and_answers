@@ -15,29 +15,18 @@ module.exports = (sequelize, DataTypes) => {
   )
   Things.associate = function(models) {
     models.Things.belongsTo(models.Categories, {
-      foreignKey: 'category_id',
+      foreignKey: 'categoryId',
       targetKey: 'id'
     })
 
     models.Things.belongsTo(models.Statuses, {
-      foreignKey: 'status_id',
+      foreignKey: 'statusId',
       targetKey: 'id'
     })
 
-    models.Things.belongsToMany(models.PropertyValues, {
+    models.Things.belongsToMany(models.Properties, {
       through: models.ThingPropertyValues,
-      foreignKey: 'thing_id'
-    })
-
-    models.Things.hasMany(models.ThingPropertyValues, {
-      foreignKey: 'thing_id',
-      sourceKey: 'id'
-    })
-
-    models.Things.hasMany(models.ThingPropertyValues, {
-      as: 'getThingPropertyValues',
-      foreignKey: 'thing_id',
-      sourceKey: 'id'
+      foreignKey: 'thingId'
     })
   }
   return Things

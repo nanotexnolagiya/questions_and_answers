@@ -18,39 +18,33 @@ module.exports = (sequelize, DataTypes) => {
   )
   ApplicationRecieve.associate = function(models) {
     models.ApplicationRecieve.belongsTo(models.Categories, {
-      foreignKey: 'category_id',
+      foreignKey: 'categoryId',
       targetKey: 'id'
     })
 
     models.ApplicationRecieve.belongsTo(models.Statuses, {
-      foreignKey: 'status_id',
+      foreignKey: 'statusId',
       targetKey: 'id'
     })
 
     models.ApplicationRecieve.belongsTo(models.Users, {
-      foreignKey: 'user_id',
+      foreignKey: 'userId',
       targetKey: 'id'
     })
 
     models.ApplicationRecieve.belongsTo(models.Users, {
-      foreignKey: 'supplier_id',
+      foreignKey: 'supplierId',
       targetKey: 'id'
     })
 
     models.ApplicationRecieve.belongsTo(models.Things, {
-      foreignKey: 'thing_id',
+      foreignKey: 'thingId',
       targetKey: 'id'
     })
 
-    models.ApplicationRecieve.belongsToMany(models.PropertyValues, {
+    models.ApplicationRecieve.belongsToMany(models.Properties, {
       through: models.ApplicationRecievePropertyValues,
-      foreignKey: 'applicationRecieve_id'
-    })
-
-    models.ApplicationRecieve.hasMany(models.ApplicationRecievePropertyValues, {
-      as: 'getApplicationRecievePropertyValues',
-      foreignKey: 'applicationRecieve_id',
-      sourceKey: 'id'
+      foreignKey: 'applicationRecieveId'
     })
   }
   return ApplicationRecieve

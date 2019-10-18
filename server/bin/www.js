@@ -56,29 +56,26 @@ const onListening = async () => {
   try {
     if (databaseReload) {
       await Statuses.bulkCreate([
-        { code: 'cancel' },
-        { code: 'expects' },
-        { code: 'delivery' },
-        { code: 'way' },
-        { code: 'accepted' },
-        { code: 'store' },
-        { code: 'booking' },
-        { code: 'exists' },
-        { code: 'cart' }
+        { code: 'cancelled', name: 'Отменено' },
+        { code: 'expects', name: 'Ожидает' },
+        { code: 'confirmed', name: 'Подтверждено' },
+        { code: 'in_the_way', name: 'В пути' },
+        { code: 'delivered', name: 'Доставлено' },
+        { code: 'found_match', name: 'Найдено совпадение' }
       ])
 
       await Roles.bulkCreate([
-        { code: 'admin' },
-        { code: 'user' },
-        { code: 'supplier' },
-        { code: 'storekeeper' }
+        { code: 'admin', name: 'Администратор' },
+        { code: 'user', name: 'Пользователь' },
+        { code: 'supplier', name: 'Доставщик' },
+        { code: 'storekeeper', name: 'Кладовщик' }
       ])
 
       const hash = await bcrypt.hash('pageup16', 10)
       await Users.create({
-        role_id: 1,
+        roleId: 1,
         name: 'Admin',
-        phone: '+998123456789',
+        phone: '+998123123123',
         password: hash
       })
     }

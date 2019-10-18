@@ -19,7 +19,9 @@ const getters = {
 const actions = {
   [USER_REQUEST]: async ({ commit, getters }) => {
     try {
-      const res = await apiCall.post('/users/me', { token: getters.token })
+      const res = await apiCall.get('/users/me', { params: {
+        token: getters.token
+      } })
       commit(USER_REQUEST, res.data)
     } catch (error) {
       throw error

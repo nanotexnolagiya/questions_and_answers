@@ -13,27 +13,40 @@ module.exports = (sequelize, DataTypes) => {
       supplierId: DataTypes.INTEGER,
       statusId: DataTypes.INTEGER
     },
-    {}
+    {
+      scopes: {
+        // publicAppTrans: {
+        //   include: [
+        //     { model: sequelize.models.Uploads },
+        //     { model: sequelize.models.Users },
+        //     { model: sequelize.models.Statuses }
+        //   ]
+        // },
+        // sequelize
+      }
+    }
   )
   ApplicationTransfer.associate = function(models) {
     models.ApplicationTransfer.belongsTo(models.Users, {
-      foreignKey: 'user_id',
+      as: 'ApplicationTransferUser',
+      foreignKey: 'userId',
       targetKey: 'id'
     })
 
     models.ApplicationTransfer.belongsTo(models.Users, {
-      foreignKey: 'supplier_id',
+      as: 'ApplicationTransferSupplier',
+      foreignKey: 'supplierId',
       targetKey: 'id'
     })
 
     models.ApplicationTransfer.belongsTo(models.Statuses, {
-      foreignKey: 'status_id',
+      foreignKey: 'statusId',
       targetKey: 'id'
     })
 
     models.ApplicationTransfer.belongsToMany(models.Uploads, {
       through: models.ApplicationTransferUploads,
-      foreignKey: 'applicationTransfer_id'
+      foreignKey: 'applicationTransferId'
     })
   }
   return ApplicationTransfer

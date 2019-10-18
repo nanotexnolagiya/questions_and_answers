@@ -5,7 +5,7 @@ import multiguard from 'vue-router-multiguard'
 
 export default [
   {
-    path: '/application-transfer',
+    path: '/app-transfers',
     component: AppTransfer,
     beforeEnter: multiguard([isAuth, isRole('admin')]),
     meta: {
@@ -13,7 +13,7 @@ export default [
     }
   },
   {
-    path: '/application-transfer/create',
+    path: '/app-transfers/create',
     component: AppTransferCreate,
     beforeEnter: multiguard([isAuth, isRole('admin')])
   }
