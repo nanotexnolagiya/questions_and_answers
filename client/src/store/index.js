@@ -8,6 +8,7 @@ import appTransfer from './modules/appTransfer'
 import appRecieve from './modules/appRecieve'
 import things from './modules/things'
 import properties from './modules/propertioes'
+import statuses from './modules/statuses'
 
 Vue.use(Vuex)
 
@@ -22,7 +23,8 @@ export default new Vuex.Store({
     appTransfer,
     appRecieve,
     things,
-    properties
+    properties,
+    statuses
   },
   strict: debug
 })

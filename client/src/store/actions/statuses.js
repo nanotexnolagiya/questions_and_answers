@@ -1,0 +1,2 @@
+export const FETCH_STATUSES = 'FETCH_STATUSES'
+export const UPDATE_STATUS = 'UPDATE_STATUS'

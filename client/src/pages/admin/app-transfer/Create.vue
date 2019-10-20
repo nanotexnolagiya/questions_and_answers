@@ -16,9 +16,12 @@
             <label class="custom-file-label" for="customFile">Выбрать файл</label>
           </div>
         </div>
-        <div class="form-group" v-if="images.length > 0">
-          <div class="upload-results">
+        <div class="form-group">
+          <div class="upload-results" v-if="images.length > 0">
             <img v-for="image in images" :key="image" :src="image" alt="">
+          </div>
+          <div class="uploads-results" v-else>
+            <img v-for="upload in appTransfer.Uploads" :src="`http://localhost:3330${upload.path}`" :key="upload.id" alt="">
           </div>
         </div>
         <button type="submit" class="btn btn-success">Сохранить</button>
@@ -29,7 +32,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { ADD_UPLOADS, ADD_APP_TRANSFER } from '../../../store/actions/appTransfer'
+import { ADD_UPLOADS, ADD_APP_TRANSFER, FETCH_APP_TRANSFER_BY_ID, UPDATE_APP_TRANSFER } from '../../../store/actions/appTransfer'
 import { LOADING } from 'actions/common'
 export default {
   data () {
@@ -38,11 +41,12 @@ export default {
       accessFileTypes: ['image/png', 'image/jpeg'],
       images: [],
       imagesFormData: null,
-      errors: []
+      errors: [],
+      updatePage: false
     }
   },
   computed: {
-    ...mapGetters(['uploads'])
+    ...mapGetters(['uploads', 'appTransfer'])
   },
   methods: {
     upload () {
@@ -89,9 +93,26 @@ export default {
         upload_ids: this.uploads.map(upload => upload.id)
       }
 
-      await this.$store.dispatch(ADD_APP_TRANSFER, appTransfer)
+      if (this.updatePage) {
+        await this.$store.dispatch(UPDATE_APP_TRANSFER, {id: this.$route.params.id, ...appTransfer})
+      } else {
+        await this.$store.dispatch(ADD_APP_TRANSFER, appTransfer)
+      }
       await this.$store.dispatch(LOADING, false)
       this.$router.push('/app-transfers')
+    }
+  },
+  async created () {
+    const id = this.$route.params.id
+
+    if (id) {
+      await this.$store.dispatch(LOADING, true)
+      await this.$store.dispatch(FETCH_APP_TRANSFER_BY_ID, id)
+      if (this.appTransfer) {
+        this.updatePage = true
+        this.text = this.appTransfer.text
+      }
+      await this.$store.dispatch(LOADING, false)
     }
   }
 }

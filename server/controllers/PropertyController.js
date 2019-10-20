@@ -26,6 +26,29 @@ const all = async (req, res) => {
   }
 };
 
+const single = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const property = await Properties.scope('publicProperties').findOne({
+      where: {
+        id
+      }
+    });
+
+    if (!property) throw new Error('Property not found') 
+
+    res.status(200).json({
+      ok: true,
+      data: property,
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      message: error.message
+    });
+  }
+};
+
 const add = async (req, res) => {
   const { name, categoryIds, type } = req.body;
   try {
@@ -59,22 +82,36 @@ const add = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { name, parent } = req.body;
+  const { name, categoryIds, type } = req.body;
   const id = req.params.id;
   try {
 
-    const category = await Categories.findOne({
+    const property = await Properties.findOne({
       where: {
         id
       }
     });
 
-    if (!category) throw new Error("Category not found");
+    if (!property) throw new Error("Category not found");
 
-    if (name) category.name = name;
-    if (parent) category.parentId = parent;
+    if (categoryIds || categoryIds.length > 0) {
+      for (categoryId of categoryIds) {
+        const category = await Categories.findOne({
+          where: {
+            id: categoryId
+          }
+        })
+    
+        if (!category) throw new Error("Category not found");
+    
+        await property.updateCategory(category);
+      }
+    }
 
-    await category.save();
+    if (name) property.name = name;
+    if (type) property.type = type;
+
+    await property.save();
 
     res.status(200).json({
       ok: true
@@ -110,6 +147,7 @@ const remove = async (req, res) => {
 };
 
 router.get('/', all)
+router.get('/:id', single)
 router.post('/', add)
 router.put('/:id', update)
 router.delete('/:id', remove)

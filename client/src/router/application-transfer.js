@@ -16,5 +16,10 @@ export default [
     path: '/app-transfers/create',
     component: AppTransferCreate,
     beforeEnter: multiguard([isAuth, isRole('admin')])
+  },
+  {
+    path: '/app-transfers/:id',
+    component: AppTransferCreate,
+    beforeEnter: multiguard([isAuth, isRole('admin')])
   }
 ]

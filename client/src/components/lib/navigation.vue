@@ -39,6 +39,7 @@ export default {
         { name: 'Пользователи', path: '/users', role: 'admin' },
         { name: 'Медиа', path: '/media', role: 'admin' },
         { name: 'Роли', path: '/roles', role: 'admin' },
+        { name: 'Статусы', path: '/statuses', role: 'admin' },
         // User
         { name: 'User', path: '/user', role: 'user' },
         // Supplier

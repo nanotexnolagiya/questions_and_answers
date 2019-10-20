@@ -1,7 +1,9 @@
 import apiCall from '../../utils/api'
 import {
   FETCH_APP_TRANSFERS,
+  FETCH_APP_TRANSFER_BY_ID,
   ADD_APP_TRANSFER,
+  UPDATE_APP_TRANSFER,
   REMOVE_APP_TRANSFER,
   ADD_UPLOADS,
   FETCH_UPLOADS
@@ -9,12 +11,14 @@ import {
 
 const state = {
   appTransfers: [],
+  appTransfer: null,
   uploads: []
 }
 
 const getters = {
   appTransfers: state => state.appTransfers,
-  appTransfer: state => id => state.appTransfers.find(appTransfer => id === appTransfer.id),
+  appTransfer: state => state.appTransfer,
+  appTransferById: state => id => state.appTransfers.find(appTransfer => id === appTransfer.id),
   uploads: state => state.uploads
 }
 
@@ -28,6 +32,19 @@ const actions = {
       })
 
       commit(FETCH_APP_TRANSFERS, res.data.data)
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_APP_TRANSFER_BY_ID]: async ({ getters, commit }, id) => {
+    try {
+      const res = await apiCall.get('/app-transfers/' + id, {
+        params: {
+          token: getters.token
+        }
+      })
+
+      commit(FETCH_APP_TRANSFER_BY_ID, res.data.data)
     } catch (error) {
       throw error
     }
@@ -58,6 +75,17 @@ const actions = {
       throw error
     }
   },
+  [UPDATE_APP_TRANSFER]: async ({ getters }, payload) => {
+    try {
+      await apiCall.put('/app-transfers/' + payload.id, payload, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
   [REMOVE_APP_TRANSFER]: async ({ getters }, id) => {
     try {
       await apiCall.delete('/app-transfers/' + id, {
@@ -77,6 +105,9 @@ const mutations = {
   },
   [FETCH_UPLOADS]: (state, payload) => {
     state.uploads = payload
+  },
+  [FETCH_APP_TRANSFER_BY_ID]: (state, payload) => {
+    state.appTransfer = payload
   }
 }
 
