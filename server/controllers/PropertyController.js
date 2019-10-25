@@ -1,8 +1,8 @@
 const express = require('express')
 const router = express.Router()
-const { Properties, Categories } = require('../models')
+const { Properties, Categories, CategoryProperties } = require('../models')
 
-const all = async (req, res) => {
+const all = async (req, res, next) => {
   const { limit, page = 1 } = req.query;
   try {
     const count = await Categories.count();
@@ -19,14 +19,11 @@ const all = async (req, res) => {
       pageCount: pages
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
-const single = async (req, res) => {
+const single = async (req, res, next) => {
   const id = req.params.id;
   try {
     const property = await Properties.scope('publicProperties').findOne({
@@ -35,26 +32,23 @@ const single = async (req, res) => {
       }
     });
 
-    if (!property) throw new Error('Property not found') 
+    if (!property) throw new ResponseException('Property not found', 400) 
 
     res.status(200).json({
       ok: true,
       data: property,
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
-const add = async (req, res) => {
+const add = async (req, res, next) => {
   const { name, categoryIds, type } = req.body;
   try {
-    if (!name) throw new Error("Name not found");
-    if (!categoryIds || categoryIds.length === 0) throw new Error("Category not found");
-    if (!type) throw new Error("Type not found");
+    if (!name) throw new ResponseException("Name not found", 400);
+    if (!categoryIds || categoryIds.length === 0) throw new ResponseException("Category not found", 400);
+    if (!type) throw new ResponseException("Type not found", 400);
 
     const property = await Properties.create({ name, type });
 
@@ -65,23 +59,20 @@ const add = async (req, res) => {
         }
       })
   
-      if (!category) throw new Error("Category not found");
+      if (!category) throw new Error("Property not found");
   
-      await property.addCategory(category);
+      await property.addCategories(category);
     }
 
-    res.status(200).json({
+    res.status(201).json({
       ok: true
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   const { name, categoryIds, type } = req.body;
   const id = req.params.id;
   try {
@@ -92,9 +83,14 @@ const update = async (req, res) => {
       }
     });
 
-    if (!property) throw new Error("Category not found");
+    if (!property) throw new ResponseException("Property not found", 400);
 
     if (categoryIds || categoryIds.length > 0) {
+      await CategoryProperties.destroy({
+        where: {
+          propertyId: id
+        }
+      });
       for (categoryId of categoryIds) {
         const category = await Categories.findOne({
           where: {
@@ -102,9 +98,9 @@ const update = async (req, res) => {
           }
         })
     
-        if (!category) throw new Error("Category not found");
+        if (!category) throw new ResponseException("Category not found");
     
-        await property.updateCategory(category);
+        await property.addCategories(category);
       }
     }
 
@@ -113,19 +109,15 @@ const update = async (req, res) => {
 
     await property.save();
 
-    res.status(200).json({
+    res.status(202).json({
       ok: true
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
-const remove = async (req, res) => {
+const remove = async (req, res, next) => {
   const id = req.params.id;
 
   try {
@@ -139,10 +131,7 @@ const remove = async (req, res) => {
       ok: true
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 

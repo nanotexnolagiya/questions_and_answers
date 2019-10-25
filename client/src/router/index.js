@@ -8,6 +8,7 @@ import appTransferRoutes from './application-transfer'
 import usersRoutes from './users'
 import properties from './properties'
 import statuses from './statuses'
+import things from './things'
 import { isAuth } from './middleware/rbac'
 
 Vue.use(Router)
@@ -28,7 +29,8 @@ const router = new Router({
     ...appTransferRoutes,
     ...usersRoutes,
     ...properties,
-    ...statuses
+    ...statuses,
+    ...things
   ]
 })
 

@@ -30,8 +30,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { FETCH_STATUSES } from '../../../store/actions/statuses'
-import { LOADING } from '../../../store/actions/common'
+import { FETCH_STATUSES } from 'actions/statuses'
+import { LOADING } from 'actions/common'
 
 export default {
   computed: {

@@ -22,6 +22,6 @@ export const isRole = (role) => {
       next()
       return
     }
-    next('/')
+    next('/404')
   }
 }

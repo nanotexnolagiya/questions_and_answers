@@ -3,7 +3,7 @@ const router = express.Router()
 const { Uploads } = require('../models')
 const upload = require('../utils/multer').any();
 
-const all = async (req, res) => {
+const all = async (req, res, next) => {
   const { limit, page = 1 } = req.query;
   try {
     const count = await Uploads.count();
@@ -21,10 +21,7 @@ const all = async (req, res) => {
       pageCount: pages
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      data: error.message
-    });
+    next(error);
   }
 }
 
@@ -51,7 +48,7 @@ const anyUpload = (req, res, next) => {
 	});
 }
 
-const add = async (req, res) => {
+const add = async (req, res, next) => {
   const data = [];
 
   try {  
@@ -67,18 +64,15 @@ const add = async (req, res) => {
           path: upload.path
         });
       }
-      res.status(200).json({
+      res.status(201).json({
         ok: true,
         data
       });
     } else {
-      throw new Error('Files not upload');
+      throw new ResponseException('Files not upload', 400);
     }
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      error: error.message
-    });
+    next(error);
   }
 }
 

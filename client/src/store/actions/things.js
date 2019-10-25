@@ -1,0 +1,5 @@
+export const FETCH_THINGS = 'FETCH_THINGS'
+export const FETCH_THING_BY_ID = 'FETCH_THING_BY_ID'
+export const ADD_THING = 'ADD_THING'
+export const UPDATE_THING = 'UPDATE_THING'
+export const REMOVE_THING = 'REMOVE_THING'

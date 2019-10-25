@@ -79,17 +79,14 @@ export default {
   async created () {
     const categoryId = this.$route.params.categoryId
     await this.$store.dispatch(LOADING, true)
+    await this.$store.dispatch(FETCH_CATEGORIES)
 
     if (categoryId) {
       this.updatedPage = true
-      this.$store.dispatch(FETCH_CATEGORIES).then(() => {
-        if (this.category) {
-          this.selectedCategory = this.category.parentId
-          this.categoryName = this.category.name
-        }
-      })
-    } else {
-      this.$store.dispatch(FETCH_CATEGORIES)
+      if (this.category) {
+        this.selectedCategory = this.category.parentId
+        this.categoryName = this.category.name
+      }
     }
     await this.$store.dispatch(LOADING, false)
   }

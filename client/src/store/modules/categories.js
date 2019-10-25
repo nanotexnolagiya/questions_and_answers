@@ -4,17 +4,20 @@ import {
   FETCH_CATEGORIES,
   ADD_CATEGORY,
   UPDATE_CATEGORY,
-  REMOVE_CATEGORY
+  REMOVE_CATEGORY,
+  FETCH_CATEGORY_PROPERTIES
 } from '../actions/categories'
 
 const state = {
-  categories: []
+  categories: [],
+  categoryProperties: []
 }
 
 const getters = {
   categories: state => state.categories,
+  categoryProperties: state => state.categoryProperties,
   category: state => id =>
-    state.categories.find(category => category.id === id),
+    state.categories.find(category => category.id === id)
 }
 
 const actions = {
@@ -26,6 +29,22 @@ const actions = {
         }
       })
       commit(FETCH_CATEGORIES, res.data.data)
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_CATEGORY_PROPERTIES]: async ({ commit, getters }, payload) => {
+    try {
+      if (payload !== 'clear') {
+        const res = await apiCall.get(`/categories/${payload}/properties`, {
+          params: {
+            token: getters.token
+          }
+        })
+        commit(FETCH_CATEGORY_PROPERTIES, res.data.data)
+      } else {
+        commit(FETCH_CATEGORY_PROPERTIES, [])
+      }
     } catch (error) {
       throw error
     }
@@ -80,7 +99,10 @@ const actions = {
 const mutations = {
   [FETCH_CATEGORIES]: (state, payload) => {
     state.categories = payload
-  }
+  },
+  [FETCH_CATEGORY_PROPERTIES]: (state, payload) => {
+    state.categoryProperties = payload
+  },
 }
 
 export default {

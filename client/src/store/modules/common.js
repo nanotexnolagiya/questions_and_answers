@@ -1,13 +1,13 @@
-import { LOADING, ERRORS } from '../actions/common'
+import { LOADING, ERROR } from '../actions/common'
 
 const state = {
   loading: false,
-  errors: []
+  error: false
 }
 
 const getters = {
   loading: state => state.loading,
-  errors: state => state.errors,
+  error: state => state.error,
   modalBackground: state => state.modalBackground
 }
 
@@ -15,8 +15,8 @@ const actions = {
   [LOADING]: ({ commit }, payload) => {
     commit(LOADING, payload)
   },
-  [ERRORS]: ({ commit }, payload) => {
-    commit(ERRORS, payload)
+  [ERROR]: ({ commit }, payload) => {
+    commit(ERROR, payload)
   }
 }
 
@@ -24,8 +24,8 @@ const mutations = {
   [LOADING]: (state, payload) => {
     state.loading = payload
   },
-  [ERRORS]: (state, payload) => {
-    state.errors = payload
+  [ERROR]: (state, payload) => {
+    state.error = payload
   }
 }
 

@@ -8,6 +8,7 @@ import treeView from 'components/lib/tree-view'
 import loading from 'components/lib/loading'
 import pageLayout from 'components/lib/page-layout'
 import { AUTH_LOGOUT } from 'actions/auth'
+import { ERROR } from 'actions/common'
 
 Vue.config.productionTip = false
 
@@ -25,6 +26,14 @@ Vue.filter('truncate', (text, stop, clamp) => {
 })
 
 Vue.config.errorHandler = function (err, vm, info) {
+  if (err.response) {
+    if (err.response.status === 401) {
+      store.dispatch(AUTH_LOGOUT)
+      location.href = '/signin'
+    }
+    console.error(err.response)
+  }
+  store.dispatch(ERROR, true)
   console.error(err)
   console.log(info)
 }

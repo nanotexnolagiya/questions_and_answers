@@ -7,7 +7,8 @@ const state = {
 
 const getters = {
   statuses: state => state.statuses,
-  status: state => id => state.statuses.find(status => status.id === id)
+  status: state => id => state.statuses.find(status => status.id === id),
+  statusByCode: state => code => state.statuses.find(status => status.code === code)
 }
 
 const actions = {

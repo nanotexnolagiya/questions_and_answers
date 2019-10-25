@@ -23,11 +23,12 @@ const getters = {
 }
 
 const actions = {
-  [FETCH_APP_TRANSFERS]: async ({ getters, commit }) => {
+  [FETCH_APP_TRANSFERS]: async ({ getters, commit }, payload) => {
     try {
       const res = await apiCall.get('/app-transfers', {
         params: {
-          token: getters.token
+          token: getters.token,
+          ...payload
         }
       })
 

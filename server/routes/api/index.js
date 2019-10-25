@@ -8,7 +8,7 @@ const {
   UploadController,
   CategoryController,
   PropertyController,
-  // ThingController,
+  ThingController,
   // StatusController,
   UserController,
   RoleController,
@@ -28,6 +28,6 @@ router.use('/properties', PropertyController)
 router.use('/users', UserController)
 router.use('/roles', RoleController)
 router.use('/statuses', StatusController)
-// router.use('/things')
+router.use('/things', ThingController)
 
 module.exports = router

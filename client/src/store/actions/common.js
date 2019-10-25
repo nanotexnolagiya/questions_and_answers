@@ -1,2 +1,2 @@
 export const LOADING = 'LOADING'
-export const ERRORS = 'ERRORS'
+export const ERROR = 'ERROR'

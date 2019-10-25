@@ -1,9 +1,9 @@
 const express = require('express')
 const router = express.Router()
-const { Categories } = require('../models')
+const { Categories, Properties } = require('../models')
 const getTree = require("../utils/tree");
 
-const all = async (req, res) => {
+const all = async (req, res, next) => {
   const { limit, page = 1 } = req.query;
   try {
     const count = await Categories.count();
@@ -21,14 +21,11 @@ const all = async (req, res) => {
       pageCount: pages
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
-const tree = async (req, res) => {
+const tree = async (req, res, next) => {
   try {
     const categories = await Categories.findAll({
       order: [["id", "ASC"]]
@@ -39,20 +36,16 @@ const tree = async (req, res) => {
     res.status(200).json({
       ok: true,
       data: catsTree
-      // pageCount: pages
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
-const add = async (req, res) => {
+const add = async (req, res, next) => {
   const { name, parent = 0 } = req.body;
   try {
-    if (!name) throw new Error("Name not found");
+    if (!name) throw new ResponseException("Name not found", 400);
 
     await Categories.create(
       {
@@ -61,18 +54,15 @@ const add = async (req, res) => {
       }
     );
 
-    res.status(200).json({
+    res.status(201).json({
       ok: true
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   const { name, parent } = req.body;
   const id = req.params.id;
   try {
@@ -83,26 +73,22 @@ const update = async (req, res) => {
       }
     });
 
-    if (!category) throw new Error("Category not found");
+    if (!category) throw new ResponseException("Category not found", 400);
 
     if (name) category.name = name;
     if (parent) category.parentId = parent;
 
     await category.save();
 
-    res.status(200).json({
+    res.status(202).json({
       ok: true
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error)
   }
 };
 
-const remove = async (req, res) => {
+const remove = async (req, res, next) => {
   const id = req.params.id;
 
   try {
@@ -116,17 +102,39 @@ const remove = async (req, res) => {
       ok: true
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    });
+    next(error);
   }
 };
+
+const properties = async (req, res, next) => {
+  const id = req.params.id;
+
+  try {
+    const category = await Categories.findOne({
+      where: {
+        id
+      },
+      include: [
+        { model: Properties }
+      ]
+    });
+
+    if (!category) new ResponseException('category not found', 400);
+
+    res.status(200).json({
+      ok: true,
+      data: category.Properties
+    })
+  } catch (error) {
+    next(error);
+  }
+}
 
 router.get('/', all)
 router.get('/tree', tree)
 router.post('/', add)
 router.put('/:id', update)
 router.delete('/:id', remove)
+router.get('/:id/properties', properties)
 
 module.exports = router

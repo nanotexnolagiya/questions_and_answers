@@ -19,7 +19,7 @@ const axios = require('axios')
  * @apiSuccess {String} token  Access token
  * @apiSuccess {String} role  User role
  */
-const signup = async (req, res) => {
+const signup = async (req, res, next) => {
   const { name, phone, password, code } = req.body
   try {
     const resToken = await axios.get(`https://graph.accountkit.com/${config.FACEBOOK_APP_VERSION}/access_token`, {
@@ -61,8 +61,6 @@ const signup = async (req, res) => {
           roleId: currRole.id
         })
 
-        console.log(user);
-
         const token = await jwt.sign(
           {
             role: currRole.code,
@@ -72,22 +70,19 @@ const signup = async (req, res) => {
           { expiresIn: '1d' }
         )
 
-        res.status(200).json({
+        res.status(201).json({
           ok: true,
           token,
           role: currRole.code
         })
       } else {
-        throw new Error('User existing!')
+        throw new ResponseException('User existing!', 400)
       }
     } else {
-      throw new Error('Phone not confirm')
+      throw new ResponseException('Phone not confirm', 400)
     }
   } catch (error) {
-    res.status(400).json({
-      ok: false,
-      message: error.message
-    })
+    next(error)
   }
 }
 
@@ -101,7 +96,7 @@ const signup = async (req, res) => {
  * @apiSuccess {String} token  Access token
  * @apiSuccess {String} role  User role
  */
-const signin = async (req, res) => {
+const signin = async (req, res, next) => {
   /**
    * Request body variables
    * @var {string} phone - User phone
@@ -139,16 +134,13 @@ const signin = async (req, res) => {
           role: user.Role.code
         })
       } else {
-        throw new Error('password failed')
+        throw new ResponseException('password failed', 400)
       }
     } else {
-      throw new Error('user not found')
+      throw new ResponseException('user not found', 400)
     }
   } catch (error) {
-    res.status(400).json({
-      ok: false,
-      message: error.message
-    })
+    next(error)
   }
 }
 

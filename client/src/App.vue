@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <oops :show="error" />
     <loading :load="loading" v-if="showLoading" />
     <router-view />
   </div>
@@ -9,6 +10,7 @@
 import { mapGetters } from 'vuex'
 import { USER_REQUEST } from 'actions/user'
 import loading from 'components/lib/loading'
+import oops from 'components/lib/oops'
 
 export default {
   name: 'app',
@@ -18,10 +20,11 @@ export default {
     }
   },
   components: {
-    loading
+    loading,
+    oops
   },
   computed: {
-    ...mapGetters(['loading'])
+    ...mapGetters(['loading', 'error'])
   },
   watch: {
     loading (newVal) {
@@ -83,6 +86,25 @@ body {
     background-color: #ffffff;
     color: #28a745;
   }
+}
+
+.color {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 10px;
+}
+
+[type="color"] {
+  display:none;
+}
+
+.color-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-block;
+  border-radius: 16px;
+  background-image: url('./assets/color.png');
 }
 
 .center-form {

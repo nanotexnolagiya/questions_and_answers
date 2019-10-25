@@ -7,7 +7,7 @@ import categories from './modules/categories'
 import appTransfer from './modules/appTransfer'
 import appRecieve from './modules/appRecieve'
 import things from './modules/things'
-import properties from './modules/propertioes'
+import properties from './modules/properties'
 import statuses from './modules/statuses'
 
 Vue.use(Vuex)

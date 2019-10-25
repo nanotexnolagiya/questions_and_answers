@@ -16,7 +16,7 @@ const bcrypt = require('bcryptjs')
  * @apiSuccess {String} token  Access token
  * @apiSuccess {String} role  User role
  */
-const me = async (req, res) => {
+const me = async (req, res, next) => {
   try {
     if (req.userData) {
       const user = await Users.scope("userPublic").findOne({
@@ -28,19 +28,16 @@ const me = async (req, res) => {
         ]
       });
 
-      if(!user) res.status(401).json({ok: false, message: 'user not found'});
+      if(!user) new ResponseException('user not found', 400);
 
       res.status(200).json(user);
     }
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      message: error.message
-    })
+    next(error);
   }
 }
 
-const all = async (req, res) => {
+const all = async (req, res, next) => {
   const { limit, page = 1 } = req.query;
   try {
     const count = await Users.count();
@@ -61,14 +58,11 @@ const all = async (req, res) => {
       pageCount: pages
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      data: error.message
-    });
+    next(error);
   }
 }
 
-const add = async (req, res) => {
+const add = async (req, res, next) => {
   const { name, phone, password, role } = req.body;
   try {
     const hash = await bcrypt.hash(password, 10);
@@ -80,18 +74,15 @@ const add = async (req, res) => {
       roleId: role
     });
 
-    res.status(200).json({
+    res.status(201).json({
       ok: true
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      data: error.message
-    });
+    next(error);
   }
 }
 
-const remove = async (req, res) => {
+const remove = async (req, res, next) => {
   const id = req.params.id;
   try {
     const user = await Users.destroy({
@@ -104,14 +95,11 @@ const remove = async (req, res) => {
       ok: Boolean(user)
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      data: error.message
-    });
+    next(error);
   }
 }
 
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   const id = req.params.id;
   const { name, phone, password, role, newPassword } = req.body;
   try {
@@ -136,14 +124,11 @@ const update = async (req, res) => {
 
     await user.save()
 
-    res.status(200).json({
+    res.status(202).json({
       ok: true
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      data: error.message
-    });
+    next(error);
   }
 }
 

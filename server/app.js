@@ -4,6 +4,9 @@ const morgan = require('morgan')
 const cors = require('cors')
 const path = require('path')
 const routes = require('./routes')
+const ResponseException = require('./utils/response-exception');
+
+global.ResponseException = ResponseException
 
 const app = express()
 
@@ -21,14 +24,13 @@ app.use('/api/v1', (req, res, next) => {
 })
 
 app.use((error, req, res, next) => {
-  res.status(error.status || 500)
-  res.json({
+  res.status(error.status || 500).json({
     ok: false,
     message: error.message
   })
 })
 
-// app.get('/*', (req, res) => {
+// app.get('/*', (req, res, next) => {
 //   res.sendFile(path.join(__dirname, 'client/index.html'));
 // })
 

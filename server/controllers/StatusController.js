@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { Statuses } = require('../models')
 
-const all = async (req, res) => {
+const all = async (req, res, next) => {
   const { limit, page = 1 } = req.query;
   try {
     const count = await Statuses.count();
@@ -20,14 +20,11 @@ const all = async (req, res) => {
       pageCount: pages
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      data: error.message
-    });
+    next(error);
   }
 }
 
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   const { name } = req.body;
   const id = req.params.id;
 
@@ -42,14 +39,11 @@ const update = async (req, res) => {
     
     await status.save();
 
-    res.status(200).json({
+    res.status(202).json({
       ok: true
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      data: error.message
-    });
+    next(error);
   }
 }
 

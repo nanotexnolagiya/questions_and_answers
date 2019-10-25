@@ -1,7 +1,149 @@
 <template>
-  <pageLayout></pageLayout>
+  <pageLayout>
+    <div class="d-flex">
+      <form class="col-sm-4" @submit.prevent="save">
+        <p class="alert alert-danger" v-if="errors && errors.length > 0">
+          <ul>
+            <li v-for="err in errors" :key="err">{{ err }}</li>
+          </ul>
+        </p>
+        <div class="form-group">
+          <select class="form-control" @change="selectCategory">
+            <option value="0" selected disabled v-if="!updatedPage"> -- Выбрать категорию -- </option>
+            <option 
+              v-for="cat in categories"
+              :key="cat.id"
+              :value="cat.id"
+            >{{ cat.name }}</option>
+          </select>
+        </div>
+        <div class="form-group" v-for="(categoryTree, idx) in categoriesTree" :key="idx">
+          <select class="form-control" @change="selectCategory">
+            <option value="0" selected disabled> -- Выбрать категорию -- </option>
+            <option 
+              v-for="cat in categoryTree"
+              :key="cat.id"
+              :value="cat.id"
+            >{{ cat.name }}</option>
+          </select>
+        </div>
+        <div class="form-group" v-for="(property, idp) in categoryProperties" :key="idp">
+          <input 
+            :type="property.type" 
+            v-if="property.type !== 'color'" 
+            class="form-control" 
+            :placeholder="property.name" 
+            v-model="propertyValues[property.id]"
+            />
+          <label class="color-icon" :style="{'background': propertyValues[property.id]}" :for="`color_${property.id}`" v-else>
+            <input type="color" :id="`color_${property.id}`" v-model="propertyValues[property.id]" />
+          </label>
+        </div>
+        <div class="form-group">
+          <select class="form-control" v-model="selectedStatus">
+            <option value="-1" disabled v-if="!updatedPage"> -- Выбрать Статус -- </option>
+            <option 
+              v-for="status in statuses" 
+              :key="status.id" 
+              :value="status.id"
+            >{{ status.name }}</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-success">{{ updatedPage ? 'Обновить' : 'Сохранить' }}</button>
+      </form>
+    </div>
+  </pageLayout>
 </template>
 
 <script>
-export default {}
+import { mapGetters } from 'vuex'
+import { FETCH_CATEGORIES_TREE, FETCH_CATEGORY_PROPERTIES } from 'actions/categories'
+import { ADD_THING } from 'actions/things'
+import { FETCH_STATUSES } from 'actions/statuses'
+import { LOADING } from 'actions/common'
+
+export default {
+  data () {
+    return {
+      updatedPage: false,
+      errors: [],
+      selectedStatus: -1,
+      categoriesTree: [],
+      propertyValues: {},
+      category: null
+    }
+  },
+  computed: {
+    ...mapGetters(['categories', 'categoryProperties', 'statuses'])
+  },
+  methods: {
+    async save () {
+      await this.$store.dispatch(LOADING, true)
+      const { category, propertyValues, selectedStatus } = this
+      this.errors = []
+      const propertyIds = Object.keys(propertyValues)
+      const properties = []
+
+      if (!category) this.errors.push('Выберите категорию')
+      if (this.categoryProperties.length !== propertyIds.length) this.errors.push('Запольните свойства')
+
+      if (this.errors.length === 0) {
+        propertyIds.map(key => {
+          properties.push({
+            propertyId: key,
+            value: propertyValues[key]
+          })
+        })
+        await this.$store.dispatch(ADD_THING, {
+          properties,
+          category_id: category,
+          statusId: selectedStatus !== -1 ? selectedStatus : null
+        })
+        this.$router.push('/things')
+      }
+      await this.$store.dispatch(LOADING, false)
+    },
+    propertyValuesChange (e, id) {
+      const value = e.target.value
+      this.propertyValues.push({
+        propertyId: id,
+        value
+      })
+    },
+    searchChildren (categories, id) {
+      for (const category of categories) {
+        if (category.id === id) {
+          return category.children
+        } else {
+          return this.searchChildren(category.children, id)
+        }
+      }
+    },
+    selectCategory (e) {
+      const categoryId = +e.target.value
+      const children = this.searchChildren(this.categories, categoryId)
+      if (children && children.length > 0) {
+        this.categoriesTree.push(children)
+      } else {
+        this.category = categoryId
+        this.$store.dispatch(FETCH_CATEGORY_PROPERTIES, categoryId)
+      }
+    }
+  },
+  async created () {
+    const id = this.$route.params.id
+    await this.$store.dispatch(LOADING, true)
+    await this.$store.dispatch(FETCH_CATEGORIES_TREE)
+    await this.$store.dispatch(FETCH_STATUSES)
+
+    if (id) {
+      this.updatedPage = true
+      // update
+    }
+    await this.$store.dispatch(LOADING, false)
+  },
+  destroyed () {
+    this.$store.dispatch(FETCH_CATEGORY_PROPERTIES, 'clear')
+  }
+}
 </script>

@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { Roles } = require('../models')
 
-const all = async (req, res) => {
+const all = async (req, res, next) => {
   const { limit, page = 1 } = req.query;
   try {
     const count = await Roles.count();
@@ -20,10 +20,7 @@ const all = async (req, res) => {
       pageCount: pages
     });
   } catch (error) {
-    res.status(500).json({
-      ok: false,
-      data: error.message
-    });
+    next(error);
   }
 }
 
