@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-  const ApplicationRecieve = sequelize.define(
-    'ApplicationRecieve',
+  const ApplicationReceive = sequelize.define(
+    'ApplicationReceive',
     {
       id: {
         allowNull: false,
@@ -16,36 +16,38 @@ module.exports = (sequelize, DataTypes) => {
     },
     {}
   )
-  ApplicationRecieve.associate = function(models) {
-    models.ApplicationRecieve.belongsTo(models.Categories, {
+  ApplicationReceive.associate = function(models) {
+    models.ApplicationReceive.belongsTo(models.Categories, {
       foreignKey: 'categoryId',
       targetKey: 'id'
     })
 
-    models.ApplicationRecieve.belongsTo(models.Statuses, {
+    models.ApplicationReceive.belongsTo(models.Statuses, {
       foreignKey: 'statusId',
       targetKey: 'id'
     })
 
-    models.ApplicationRecieve.belongsTo(models.Users, {
+    models.ApplicationReceive.belongsTo(models.Users, {
+      as: "ApplicationReceiveUser",
       foreignKey: 'userId',
       targetKey: 'id'
     })
 
-    models.ApplicationRecieve.belongsTo(models.Users, {
+    models.ApplicationReceive.belongsTo(models.Users, {
+      as: "ApplicationReceiveSupplier",
       foreignKey: 'supplierId',
       targetKey: 'id'
     })
 
-    models.ApplicationRecieve.belongsTo(models.Things, {
+    models.ApplicationReceive.belongsTo(models.Things, {
       foreignKey: 'thingId',
       targetKey: 'id'
     })
 
-    models.ApplicationRecieve.belongsToMany(models.Properties, {
-      through: models.ApplicationRecievePropertyValues,
-      foreignKey: 'applicationRecieveId'
+    models.ApplicationReceive.belongsToMany(models.Properties, {
+      through: models.ApplicationReceivePropertyValues,
+      foreignKey: 'applicationReceiveId'
     })
   }
-  return ApplicationRecieve
+  return ApplicationReceive
 }

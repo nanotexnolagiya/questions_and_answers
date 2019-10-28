@@ -63,7 +63,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { FETCH_CATEGORIES, FETCH_CATEGORY_PROPERTIES } from 'actions/categories'
-import { ADD_THING } from 'actions/things'
+import { ADD_APP_RECEIVE } from 'actions/appReceive'
 import { FETCH_STATUSES } from 'actions/statuses'
 import { LOADING } from 'actions/common'
 
@@ -99,12 +99,12 @@ export default {
             value: propertyValues[key]
           })
         })
-        await this.$store.dispatch(ADD_THING, {
+        await this.$store.dispatch(ADD_APP_RECEIVE, {
           properties,
           category_id: category,
           statusId: selectedStatus !== -1 ? selectedStatus : null
         })
-        this.$router.push('/things')
+        this.$router.push('/app-receives')
       }
       await this.$store.dispatch(LOADING, false)
     },

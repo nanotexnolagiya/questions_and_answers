@@ -5,7 +5,7 @@ import user from './modules/user'
 import auth from './modules/auth'
 import categories from './modules/categories'
 import appTransfer from './modules/appTransfer'
-import appRecieve from './modules/appRecieve'
+import appReceive from './modules/appReceive'
 import things from './modules/things'
 import properties from './modules/properties'
 import statuses from './modules/statuses'
@@ -21,7 +21,7 @@ export default new Vuex.Store({
     auth,
     categories,
     appTransfer,
-    appRecieve,
+    appReceive,
     things,
     properties,
     statuses

@@ -1,22 +1,22 @@
 import { isAuth, isRole } from './middleware/rbac'
-import Things from '@/pages/admin/things/List'
-import ThingCreate from '@/pages/admin/things/Create'
+import AppReceives from '@/pages/admin/app-receive/List'
+import AppReceiveCreate from '@/pages/admin/app-receive/Create'
 import multiguard from 'vue-router-multiguard'
 
 export default [
   {
-    path: '/things',
-    component: Things,
+    path: '/app-receives',
+    component: AppReceives,
     beforeEnter: multiguard([isAuth, isRole('admin')])
   },
   {
-    path: '/things/create',
-    component: ThingCreate,
+    path: '/app-receives/create',
+    component: AppReceiveCreate,
     beforeEnter: multiguard([isAuth, isRole('admin')])
   },
   {
-    path: '/things/:id',
-    component: ThingCreate,
+    path: '/app-receives/:id',
+    component: AppReceiveCreate,
     beforeEnter: multiguard([isAuth, isRole('admin')])
   }
 ]

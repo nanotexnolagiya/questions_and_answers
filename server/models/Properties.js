@@ -30,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
       through: models.ThingPropertyValues,
       foreignKey: 'propertyId'
     })
+    models.Properties.belongsToMany(models.ApplicationReceive, {
+      through: models.ApplicationReceivePropertyValues,
+      foreignKey: 'propertyId'
+    })
   }
   return Properties
 }

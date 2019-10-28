@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-  const ApplicationRecievePropertyValues = sequelize.define(
-    'ApplicationRecievePropertyValues',
+  const ApplicationReceivePropertyValues = sequelize.define(
+    'ApplicationReceivePropertyValues',
     {
       id: {
         allowNull: false,
@@ -10,12 +10,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       value: DataTypes.STRING,
       propertyId: DataTypes.INTEGER,
-      applicationRecieveId: DataTypes.INTEGER
+      applicationReceiveId: DataTypes.INTEGER
     },
     {}
   )
-  ApplicationRecievePropertyValues.associate = function(models) {
+  ApplicationReceivePropertyValues.associate = function(models) {
     // associations can be defined here
   }
-  return ApplicationRecievePropertyValues
+  return ApplicationReceivePropertyValues
 }

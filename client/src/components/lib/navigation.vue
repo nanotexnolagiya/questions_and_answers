@@ -35,7 +35,7 @@ export default {
         { name: 'Свойства', path: '/properties', role: 'admin' },
         { name: 'Заявки для передачи вещи', path: '/app-transfers', role: 'admin' },
         { name: 'Вещи', path: '/things', role: 'admin' },
-        { name: 'Заявки для получении вещи', path: '/application-recieve', role: 'admin' },
+        { name: 'Заявки для получении вещи', path: '/app-receives', role: 'admin' },
         { name: 'Пользователи', path: '/users', role: 'admin' },
         { name: 'Медиа', path: '/media', role: 'admin' },
         { name: 'Роли', path: '/roles', role: 'admin' },

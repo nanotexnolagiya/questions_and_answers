@@ -5,6 +5,7 @@ import checkAuth from './middleware/check-auth'
 import categoriesRoutes from './categories'
 import authRoutes from './auth'
 import appTransferRoutes from './application-transfer'
+import appReceiveRoutes from './application-receive'
 import usersRoutes from './users'
 import properties from './properties'
 import statuses from './statuses'
@@ -27,6 +28,7 @@ const router = new Router({
     ...authRoutes,
     ...categoriesRoutes,
     ...appTransferRoutes,
+    ...appReceiveRoutes,
     ...usersRoutes,
     ...properties,
     ...statuses,
