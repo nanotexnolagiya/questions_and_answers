@@ -6,10 +6,12 @@ const {
   Properties,
   Users,
   Statuses,
+  Things,
   ApplicationReceivePropertyValues
 } = require("../models");
 const filter = require('../utils/filter');
 const order = require('../utils/order');
+const arrayEqual = require('../utils/arrayEqual');
 
 
 const all = async (req, res, next) => {
@@ -38,6 +40,7 @@ const all = async (req, res, next) => {
         { model: Statuses },
         { model: Categories },
         { model: Properties },
+        { model: Things },
         { model: Users, as: "ApplicationReceiveUser" },
         { model: Users, as: "ApplicationReceiveSupplier" },
       ]
@@ -84,6 +87,7 @@ const add = async (req, res, next) => {
   const { properties, category_id, statusId } = req.body;
 
   try {
+    let hasThing = false;
     const statusStatement = {}
     if (statusId) {
       statusStatement.where = {
@@ -95,6 +99,18 @@ const add = async (req, res, next) => {
       }
     }
     const status = await Statuses.findOne(statusStatement);
+    
+    const exceptStatus = await Statuses.findOne({
+      where: {
+        code: "expects"
+      }
+    });
+
+    const foundMatchStatus = await Statuses.findOne({
+      where: {
+        code: 'found_match'
+      }
+    });
 
     if (!status) throw new ResponseException("Status not found", 400);
     if (!category_id) throw new ResponseException("Category not found", 400);
@@ -107,6 +123,41 @@ const add = async (req, res, next) => {
     });
 
     await ApplicationReceivePropertyValues.bulkCreate(properties.map(property => ({ applicationReceiveId: appRecieve.id, ...property })));
+
+    const things = await Things.findAll({
+      where: {
+        statusId: exceptStatus.id,
+        categoryId: category_id
+      },
+      include: [
+        {
+          model: Properties,
+          where: {
+            id: {
+              $in: properties.map(property => property.propertyId)
+            }
+          }
+        }
+      ]
+    });
+
+    for (const thing of things) {
+      const thingValues = thing.dataValues.Properties.map(propertyValues => propertyValues.ThingPropertyValues.value)
+      const appValues = properties.map(property => property.value)
+
+      if (arrayEqual(thingValues, appValues)) {
+        hasThing = thing
+      }
+    }
+
+    if (hasThing) {
+      appRecieve.thingId = hasThing.id
+      appRecieve.statusId = foundMatchStatus.id
+      await appRecieve.save();
+
+      hasThing.statusId = foundMatchStatus.id
+      await hasThing.save();
+    }
 
     res.status(201).json({
       ok: true

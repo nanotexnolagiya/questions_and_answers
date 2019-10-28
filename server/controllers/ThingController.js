@@ -5,10 +5,12 @@ const {
   Categories,
   Properties,
   Statuses,
+  ApplicationReceive,
   ThingPropertyValues
 } = require("../models");
 const filter = require('../utils/filter');
 const order = require('../utils/order');
+const arrayEqual = require('../utils/arrayEqual');
 
 
 const all = async (req, res, next) => {
@@ -79,6 +81,7 @@ const add = async (req, res, next) => {
   const { properties, category_id, statusId } = req.body;
 
   try {
+    let hasAppReceive = false;
     const statusStatement = {}
     if (statusId) {
       statusStatement.where = {
@@ -90,6 +93,18 @@ const add = async (req, res, next) => {
       }
     }
     const status = await Statuses.findOne(statusStatement);
+    
+    const exceptStatus = await Statuses.findOne({
+      where: {
+        code: "expects"
+      }
+    });
+
+    const foundMatchStatus = await Statuses.findOne({
+      where: {
+        code: 'found_match'
+      }
+    });
 
     if (!status) throw new ResponseException("Status not found", 400);
     if (!category_id) throw new ResponseException("Category not found", 400);
@@ -102,8 +117,50 @@ const add = async (req, res, next) => {
 
     await ThingPropertyValues.bulkCreate(properties.map(property => ({ thingId: thing.id, ...property })));
 
+    const appReceives = await ApplicationReceive.findAll({
+      where: {
+        statusId: exceptStatus.id,
+        categoryId: category_id
+      },
+      include: [
+        {
+          model: Properties,
+          where: {
+            id: {
+              $in: properties.map(property => property.propertyId)
+            }
+          }
+        }
+      ]
+    });
+
+    let d = {}
+
+    for (const appReceive of appReceives) {
+      d[appReceive.id] = {}
+      const appValues = appReceive.dataValues.Properties.map(propertyValues => propertyValues.ApplicationReceivePropertyValues.value)
+      const thingValues = properties.map(property => property.value)
+
+      d[appReceive.id]['t'] = thingValues
+      d[appReceive.id]['a'] = appValues
+      if (arrayEqual(thingValues, appValues)) {
+        hasAppReceive = appReceive
+      }
+    }
+
+    if (hasAppReceive) {
+      thing.statusId = foundMatchStatus.id
+      await thing.save();
+
+      hasAppReceive.statusId = foundMatchStatus.id
+      hasAppReceive.thingId = thing.id
+      await hasAppReceive.save();
+    }
+
     res.status(201).json({
-      ok: true
+      ok: true,
+      data: d,
+      rec: hasAppReceive
     });
   } catch (error) {
     next(error);
@@ -115,37 +172,6 @@ const update = async (req, res, next) => {
   const id = req.params.id;
 
   try {
-
-    const status = await Statuses.findOne({
-      where: {
-        id: statusId
-      }
-    });
-
-    if (!status) throw new ResponseException('Status not found', 400);
-
-    const data = await ApplicationTransfer.findOne({
-      where: {
-        id
-      }
-    });
-
-    if (text) data.text = text
-    data.statusId = status.id
-
-    if (upload_ids.length !== 0) {
-      const uploads = await Uploads.findAll({
-        where: {
-          id: {
-            $in: upload_ids
-          }
-        }
-      });
-
-      await data.setUploads(uploads);
-    }
-
-    await data.save();
 
     res.status(202).json({
       ok: true
