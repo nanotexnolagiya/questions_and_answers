@@ -7,16 +7,16 @@ export default [
   {
     path: '/things',
     component: Things,
-    beforeEnter: multiguard([isAuth, isRole('admin')])
+    beforeEnter: multiguard([isAuth, isRole(['admin'])])
   },
   {
     path: '/things/create',
     component: ThingCreate,
-    beforeEnter: multiguard([isAuth, isRole('admin')])
+    beforeEnter: multiguard([isAuth, isRole(['admin'])])
   },
   {
     path: '/things/:id',
     component: ThingCreate,
-    beforeEnter: multiguard([isAuth, isRole('admin')])
+    beforeEnter: multiguard([isAuth, isRole(['admin'])])
   }
 ]

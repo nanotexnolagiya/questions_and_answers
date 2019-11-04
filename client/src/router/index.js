@@ -10,6 +10,7 @@ import usersRoutes from './users'
 import properties from './properties'
 import statuses from './statuses'
 import things from './things'
+import Profile from '@/pages/Profile'
 import { isAuth } from './middleware/rbac'
 
 Vue.use(Router)
@@ -24,6 +25,11 @@ const router = new Router({
       meta: {
         title: 'Главная'
       }
+    },
+    {
+      path: '/profile',
+      component: Profile,
+      beforeEnter: isAuth,
     },
     ...authRoutes,
     ...categoriesRoutes,

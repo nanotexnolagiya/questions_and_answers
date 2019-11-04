@@ -3,7 +3,6 @@
     <form class="center-form" @submit.prevent="signin">
       <h3 class="text-center mb-3">Вход</h3>
       <p v-if="errors.length" class="mb-3 alert alert-danger">
-        <b>Пожалуйста исправьте указанные ошибки:</b>
         <ul>
           <li v-for="error in errors" :key="error">{{ error }}</li>
         </ul>

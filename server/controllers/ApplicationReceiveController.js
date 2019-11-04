@@ -95,14 +95,14 @@ const add = async (req, res, next) => {
       }
     } else {
       statusStatement.where = {
-        code: "expects"
+        code: "await"
       }
     }
     const status = await Statuses.findOne(statusStatement);
     
-    const exceptStatus = await Statuses.findOne({
+    const awaitStatus = await Statuses.findOne({
       where: {
-        code: "expects"
+        code: "await"
       }
     });
 
@@ -116,17 +116,17 @@ const add = async (req, res, next) => {
     if (!category_id) throw new ResponseException("Category not found", 400);
     if (!properties && properties.length === 0) throw new ResponseException("Properties not found", 400);
 
-    const appRecieve = await ApplicationReceive.create({
+    const appReceive = await ApplicationReceive.create({
       userId: req.userData.userId,
       categoryId: category_id,
       statusId: status.id
     });
 
-    await ApplicationReceivePropertyValues.bulkCreate(properties.map(property => ({ applicationReceiveId: appRecieve.id, ...property })));
+    await ApplicationReceivePropertyValues.bulkCreate(properties.map(property => ({ applicationReceiveId: appReceive.id, ...property })));
 
     const things = await Things.findAll({
       where: {
-        statusId: exceptStatus.id,
+        statusId: awaitStatus.id,
         categoryId: category_id
       },
       include: [
@@ -151,9 +151,9 @@ const add = async (req, res, next) => {
     }
 
     if (hasThing) {
-      appRecieve.thingId = hasThing.id
-      appRecieve.statusId = foundMatchStatus.id
-      await appRecieve.save();
+      appReceive.thingId = hasThing.id
+      appReceive.statusId = foundMatchStatus.id
+      await appReceive.save();
 
       hasThing.statusId = foundMatchStatus.id
       await hasThing.save();
@@ -168,10 +168,122 @@ const add = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
-  const { text, upload_ids = [], statusId } = req.body;
+  const { properties, category_id, statusId, thingId, supplierId } = req.body;
   const id = req.params.id;
 
   try {
+    const appReceive = await ApplicationReceive.findOne({
+      where: {
+        id
+      }
+    });
+
+    if(!appReceive) throw new ResponseException('Application not found'); 
+
+    if (category_id) {
+      const category = await Categories.findOne({
+        where: {
+          id: category_id
+        }
+      });
+      if (!category) throw new ResponseException('Category not found', 400);
+      appReceive.categoryId = category.id
+    }
+
+    if (statusId) {
+      const status = await Statuses.findOne({
+        where: {
+          id: statusId
+        }
+      });
+  
+      if (!status) throw new ResponseException('Status not found', 400);
+
+      appReceive.statusId = status.id
+    }
+
+    if (thingId) {
+      const thing = await Things.findOne({
+        where: {
+          id: thingId
+        }
+      });
+
+      if (!thing) throw new ResponseException('Thing not found', 400);
+
+      appReceive.thingId = thing.id
+    }
+
+    if (supplierId) {
+      const supplier = await Users.findOne({
+        where: {
+          id: supplierId
+        }
+      });
+
+      if (!supplier) throw new ResponseException('Supplier not found', 400);
+
+      appReceive.supplierId = supplier.id
+    }
+
+    if (properties && properties.length > 0) {
+      let hasThing = false;
+      const awaitStatus = await Statuses.findOne({
+        where: {
+          code: "await"
+        }
+      });
+
+      const foundMatchStatus = await Statuses.findOne({
+        where: {
+          code: 'found_match'
+        }
+      });
+
+      await ApplicationReceivePropertyValues.destroy({
+        where: {
+          applicationReceiveId: appReceive.id
+        }
+      });
+      await ApplicationReceivePropertyValues.bulkCreate(properties.map(property => ({ applicationReceiveId: appReceive.id, ...property })));
+
+      const things = await Things.findAll({
+        where: {
+          statusId: awaitStatus.id,
+          categoryId: category_id
+        },
+        include: [
+          {
+            model: Properties,
+            where: {
+              id: {
+                $in: properties.map(property => property.propertyId)
+              }
+            }
+          }
+        ]
+      });
+  
+      for (const thing of things) {
+        const thingValues = thing.dataValues.Properties.map(propertyValues => propertyValues.ThingPropertyValues.value)
+        const appValues = properties.map(property => property.value)
+  
+        if (arrayEqual(thingValues, appValues)) {
+          hasThing = thing
+        }
+      }
+  
+      if (hasThing) {
+        appReceive.thingId = hasThing.id
+        appReceive.statusId = foundMatchStatus.id
+        await appReceive.save();
+  
+        hasThing.statusId = foundMatchStatus.id
+        await hasThing.save();
+      }
+    }
+
+    await appReceive.save();
 
     res.status(202).json({
       ok: true

@@ -4,7 +4,12 @@ import {
   FETCH_APP_RECEIVE_BY_ID,
   ADD_APP_RECEIVE,
   UPDATE_APP_RECEIVE,
-  REMOVE_APP_RECEIVE
+  REMOVE_APP_RECEIVE,
+  FETCH_ACCOUNT_APP_RECEIVES,
+  FETCH_ACCOUNT_APP_RECEIVE_BY_ID,
+  ADD_ACCOUNT_APP_RECEIVE,
+  UPDATE_ACCOUNT_APP_RECEIVE,
+  REMOVE_ACCOUNT_APP_RECEIVE
 } from '../actions/appReceive'
 
 const state = {
@@ -29,6 +34,7 @@ const actions = {
       })
 
       commit(FETCH_APP_RECEIVES, res.data.data)
+      return res.data
     } catch (error) {
       throw error
     }
@@ -78,7 +84,23 @@ const actions = {
     } catch (error) {
       throw error
     }
-  }
+  },
+  // -------------------------------------------------------------
+  [FETCH_ACCOUNT_APP_RECEIVES]: async ({ getters, commit }, payload) => {
+    try {
+      const res = await apiCall.get('/account/app-receives', {
+        params: {
+          token: getters.token,
+          ...payload
+        }
+      })
+
+      commit(FETCH_APP_RECEIVES, res.data.data)
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  },
 }
 
 const mutations = {

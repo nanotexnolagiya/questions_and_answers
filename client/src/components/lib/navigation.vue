@@ -31,27 +31,21 @@ export default {
     return {
       menu: [
         // Admin
-        { name: 'Категории', path: '/categories', role: 'admin' },
-        { name: 'Свойства', path: '/properties', role: 'admin' },
-        { name: 'Заявки для передачи вещи', path: '/app-transfers', role: 'admin' },
-        { name: 'Вещи', path: '/things', role: 'admin' },
-        { name: 'Заявки для получении вещи', path: '/app-receives', role: 'admin' },
-        { name: 'Пользователи', path: '/users', role: 'admin' },
-        { name: 'Медиа', path: '/media', role: 'admin' },
-        { name: 'Роли', path: '/roles', role: 'admin' },
-        { name: 'Статусы', path: '/statuses', role: 'admin' },
-        // User
-        { name: 'User', path: '/user', role: 'user' },
-        // Supplier
-        { name: 'Supplier', path: '/supplier', role: 'supplier' },
-        // Storekeeper
-        { name: 'Storekeeper', path: '/storekeeper', role: 'storekeeper' },
+        { name: 'Категории', path: '/categories', roles: ['admin'] },
+        { name: 'Свойства', path: '/properties', roles: ['admin'] },
+        { name: 'Заявки для передачи вещи', path: '/app-transfers', roles: ['admin', 'user', 'supplier', 'storekeeper'] },
+        { name: 'Вещи', path: '/things', roles: ['admin', 'storekeeper'] },
+        { name: 'Заявки для получении вещи', path: '/app-receives', roles: ['admin', 'user', 'supplier', 'storekeeper'] },
+        { name: 'Пользователи', path: '/users', roles: ['admin'] },
+        { name: 'Медиа', path: '/media', roles: ['admin'] },
+        { name: 'Роли', path: '/roles', roles: ['admin'] },
+        { name: 'Статусы', path: '/statuses', roles: ['admin'] }
       ]
     }
   },
   computed: {
     roleMenu () {
-      return this.menu.filter(m => m.role === this.role)
+      return this.menu.filter(m => m.roles.includes(this.role))
     }
   },
   methods: {

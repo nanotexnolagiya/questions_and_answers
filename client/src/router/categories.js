@@ -8,7 +8,7 @@ export default [
   {
     path: '/categories',
     component: Category,
-    beforeEnter: multiguard([isAuth, isRole('admin')]),
+    beforeEnter: multiguard([isAuth, isRole(['admin'])]),
     meta: {
       title: 'Категории'
     }
@@ -16,7 +16,7 @@ export default [
   {
     path: '/categories/create',
     component: CreateCategory,
-    beforeEnter: multiguard([isAuth, isRole('admin')]),
+    beforeEnter: multiguard([isAuth, isRole(['admin'])]),
     meta: {
       title: 'Добавить категорию'
     }
@@ -24,7 +24,7 @@ export default [
   {
     path: '/categories/:categoryId',
     component: CreateCategory,
-    beforeEnter: multiguard([isAuth, isRole('admin')]),
+    beforeEnter: multiguard([isAuth, isRole(['admin'])]),
     meta: {
       title: 'Изменить категорию'
     }

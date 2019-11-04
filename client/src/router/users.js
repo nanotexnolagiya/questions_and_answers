@@ -8,7 +8,7 @@ export default [
   {
     path: '/users',
     component: Users,
-    beforeEnter: multiguard([isAuth, isRole('admin')]),
+    beforeEnter: multiguard([isAuth, isRole(['admin'])]),
     meta: {
       title: 'Категории'
     }
@@ -16,7 +16,7 @@ export default [
   {
     path: '/users/create',
     component: CreateUser,
-    beforeEnter: multiguard([isAuth, isRole('admin')]),
+    beforeEnter: multiguard([isAuth, isRole(['admin'])]),
     meta: {
       title: 'Добавить категорию'
     }
@@ -24,7 +24,7 @@ export default [
   {
     path: '/users/:userId',
     component: CreateUser,
-    beforeEnter: multiguard([isAuth, isRole('admin')]),
+    beforeEnter: multiguard([isAuth, isRole(['admin'])]),
     meta: {
       title: 'Изменить категорию'
     }

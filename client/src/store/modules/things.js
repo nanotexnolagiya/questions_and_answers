@@ -29,6 +29,7 @@ const actions = {
       })
 
       commit(FETCH_THINGS, res.data.data)
+      return res.data
     } catch (error) {
       throw error
     }

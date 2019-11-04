@@ -89,14 +89,14 @@ const add = async (req, res, next) => {
       }
     } else {
       statusStatement.where = {
-        code: "expects"
+        code: "await"
       }
     }
     const status = await Statuses.findOne(statusStatement);
     
-    const exceptStatus = await Statuses.findOne({
+    const awaitStatus = await Statuses.findOne({
       where: {
-        code: "expects"
+        code: "await"
       }
     });
 
@@ -119,7 +119,7 @@ const add = async (req, res, next) => {
 
     const appReceives = await ApplicationReceive.findAll({
       where: {
-        statusId: exceptStatus.id,
+        statusId: awaitStatus.id,
         categoryId: category_id
       },
       include: [
@@ -134,15 +134,10 @@ const add = async (req, res, next) => {
       ]
     });
 
-    let d = {}
-
     for (const appReceive of appReceives) {
-      d[appReceive.id] = {}
       const appValues = appReceive.dataValues.Properties.map(propertyValues => propertyValues.ApplicationReceivePropertyValues.value)
       const thingValues = properties.map(property => property.value)
 
-      d[appReceive.id]['t'] = thingValues
-      d[appReceive.id]['a'] = appValues
       if (arrayEqual(thingValues, appValues)) {
         hasAppReceive = appReceive
       }
@@ -158,9 +153,7 @@ const add = async (req, res, next) => {
     }
 
     res.status(201).json({
-      ok: true,
-      data: d,
-      rec: hasAppReceive
+      ok: true
     });
   } catch (error) {
     next(error);
@@ -168,10 +161,99 @@ const add = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
-  const { text, upload_ids = [], statusId } = req.body;
+  const { properties, category_id, statusId } = req.body;
   const id = req.params.id;
 
   try {
+    const thing = await Things.findOne({
+      where: {
+        id
+      }
+    });
+
+    if(!thing) throw new ResponseException('Thing not found'); 
+
+    if (category_id) {
+      const category = await Categories.findOne({
+        where: {
+          id: category_id
+        }
+      });
+      if (!category) throw new ResponseException('Category not found', 400);
+      thing.categoryId = category.id
+    }
+
+    if (statusId) {
+      const status = await Statuses.findOne({
+        where: {
+          id: statusId
+        }
+      });
+  
+      if (!status) throw new ResponseException('Status not found', 400);
+
+      thing.statusId = status.id
+    }
+
+    if (properties && properties.length > 0) {
+      let hasAppReceive = false;
+    
+      const awaitStatus = await Statuses.findOne({
+        where: {
+          code: "await"
+        }
+      });
+  
+      const foundMatchStatus = await Statuses.findOne({
+        where: {
+          code: 'found_match'
+        }
+      });
+      
+      await ThingPropertyValues.destroy({
+        where: {
+          thingId: thing.id
+        }
+      });
+      await ThingPropertyValues.bulkCreate(properties.map(property => ({ thingId: thing.id, ...property })));
+
+      const appReceives = await ApplicationReceive.findAll({
+        where: {
+          statusId: awaitStatus.id,
+          categoryId: category_id
+        },
+        include: [
+          {
+            model: Properties,
+            where: {
+              id: {
+                $in: properties.map(property => property.propertyId)
+              }
+            }
+          }
+        ]
+      });
+
+      for (const appReceive of appReceives) {
+        const appValues = appReceive.dataValues.Properties.map(propertyValues => propertyValues.ApplicationReceivePropertyValues.value)
+        const thingValues = properties.map(property => property.value)
+
+        if (arrayEqual(thingValues, appValues)) {
+          hasAppReceive = appReceive
+        }
+      }
+
+      if (hasAppReceive) {
+        thing.statusId = foundMatchStatus.id
+        await thing.save();
+
+        hasAppReceive.statusId = foundMatchStatus.id
+        hasAppReceive.thingId = thing.id
+        await hasAppReceive.save();
+      }
+    }
+
+    await thing.save();
 
     res.status(202).json({
       ok: true

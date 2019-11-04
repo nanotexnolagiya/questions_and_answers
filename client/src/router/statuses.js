@@ -8,11 +8,11 @@ export default [
   {
     path: '/statuses',
     component: Status,
-    beforeEnter: multiguard([isAuth, isRole('admin')])
+    beforeEnter: multiguard([isAuth, isRole(['admin'])])
   },
   {
     path: '/statuses/:id',
     component: StatusUpdate,
-    beforeEnter: multiguard([isAuth, isRole('admin')])
+    beforeEnter: multiguard([isAuth, isRole(['admin'])])
   }
 ]

@@ -4,7 +4,7 @@
 
     <!-- Sidebar -->
     <div class="bg-light border-right" id="sidebar-wrapper">
-      <div class="sidebar-heading">Open Hands</div>
+      <router-link tag="div" style="cursor:pointer;" class="sidebar-heading" to="/">Open Hands</router-link>
       <navigation v-if="role && role.length > 0" :role="role" />
     </div>
     <!-- /#sidebar-wrapper -->

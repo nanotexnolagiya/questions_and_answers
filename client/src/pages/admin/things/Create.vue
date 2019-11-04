@@ -8,8 +8,8 @@
           </ul>
         </p>
         <div class="form-group">
-          <select class="form-control" @change="selectCategory">
-            <option value="0" selected disabled v-if="!updatedPage"> -- Выбрать категорию -- </option>
+          <select class="form-control" @change="selectCategory" v-if="!updatedPage">
+            <option value="0" selected disabled> -- Выбрать категорию -- </option>
             <option 
               v-for="cat in searchChildren(categories, 0)"
               :key="cat.id"
@@ -17,11 +17,12 @@
             >{{ cat.name }}</option>
           </select>
         </div>
-        <div class="form-group" v-for="(categoryTree, idx) in categoriesTree" :key="idx">
+        <div class="form-group" v-for="categoryTree in categoriesTree" :key="categoryTree.categoryId">
           <select class="form-control" @change="selectCategory">
             <option value="0" selected disabled> -- Выбрать категорию -- </option>
             <option 
-              v-for="cat in categoryTree"
+              v-for="cat in categoryTree.children"
+              :selected="updatedPage && cat.id === categoryTree.categoryId"
               :key="cat.id"
               :value="cat.id"
             >{{ cat.name }}</option>
@@ -29,7 +30,7 @@
         </div>
         <div class="form-group" v-for="(property, idp) in categoryProperties" :key="idp">
           <label class="color-icon" :style="{'background': propertyValues[property.id]}" :for="`color_${property.id}`" v-if="property.type === 'color'">
-            <input type="color" :id="`color_${property.id}`" v-model="propertyValues[property.id]" />
+            <input type="color" @change="colorUpdate" :id="`color_${property.id}`" v-model="propertyValues[property.id]" />
           </label>
           <textarea 
             class="form-control" 
@@ -63,7 +64,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { FETCH_CATEGORIES, FETCH_CATEGORY_PROPERTIES } from 'actions/categories'
-import { ADD_THING } from 'actions/things'
+import { ADD_THING, UPDATE_THING, FETCH_THING_BY_ID } from 'actions/things'
 import { FETCH_STATUSES } from 'actions/statuses'
 import { LOADING } from 'actions/common'
 
@@ -79,7 +80,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['categories', 'categoryProperties', 'statuses'])
+    ...mapGetters(['categories', 'categoryProperties', 'statuses', 'thing'])
   },
   methods: {
     async save () {
@@ -99,11 +100,16 @@ export default {
             value: propertyValues[key]
           })
         })
-        await this.$store.dispatch(ADD_THING, {
+        const thing = {
           properties,
           category_id: category,
           statusId: selectedStatus !== -1 ? selectedStatus : null
-        })
+        }
+        if (this.updatedPage) {
+          await this.$store.dispatch(UPDATE_THING, { id: this.thing.id, ...thing })
+        } else {
+          await this.$store.dispatch(ADD_THING, thing)
+        }
         this.$router.push('/things')
       }
       await this.$store.dispatch(LOADING, false)
@@ -130,7 +136,7 @@ export default {
     clearChildren (categoryId) {
       const category = this.findById(categoryId)
 
-      if (category.parentId === 0) {
+      if (category.parentId === 0 && !this.updatedPage) {
         this.categoriesTree = []
         return
       }
@@ -142,15 +148,39 @@ export default {
       }
     },
     selectCategory (e) {
+      if (this.updatedPage) {
+        alert('Пока что изменение категории не работает')
+        return false
+      }
       const categoryId = +e.target.value
       const children = this.searchChildren(this.categories, categoryId)
       if (children && children.length > 0) {
         this.clearChildren(categoryId)
-        this.categoriesTree.push(children)
+        this.categoriesTree.push({
+          categoryId,
+          children
+        })
       } else {
         this.category = categoryId
         this.$store.dispatch(FETCH_CATEGORY_PROPERTIES, categoryId)
       }
+    },
+    setCategoriesTree (categoryId, currentCategory) {
+      const children = this.searchChildren(this.categories, categoryId)
+      if (children && children.length > 0) {
+        this.categoriesTree.push({
+          categoryId: currentCategory,
+          children
+        })
+        const category = this.findById(categoryId)
+        if (category) {
+          this.setCategoriesTree(category.parentId, category.id)
+        }
+      }
+    },
+    colorUpdate (e) {
+      const color = e.target.value
+      e.target.parentElement.style.background = color
     }
   },
   async created () {
@@ -161,6 +191,19 @@ export default {
 
     if (id) {
       this.updatedPage = true
+      await this.$store.dispatch(FETCH_THING_BY_ID, id)
+
+      if (this.thing) {
+        this.category = this.thing.Category.id
+        this.selectedStatus = this.thing.Status.id
+        await this.setCategoriesTree(this.thing.Category.parentId, this.category)
+        await this.categoriesTree.reverse()
+        for (const property of this.thing.Properties) {
+          this.categoryProperties = property
+          this.propertyValues[property.id] = property.ThingPropertyValues.value
+        }
+        await this.$store.dispatch(FETCH_CATEGORY_PROPERTIES, this.category)
+      }
       // update
     }
     await this.$store.dispatch(LOADING, false)

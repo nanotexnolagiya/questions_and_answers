@@ -16,9 +16,9 @@ export const isAuth = (to, from, next) => {
   next('/signin')
 }
 
-export const isRole = (role) => {
+export const isRole = (roles) => {
   return (to, from, next) => {
-    if (store.getters.role === role) {
+    if (roles.includes(store.getters.role)) {
       next()
       return
     }

@@ -33,6 +33,8 @@ const actions = {
       })
 
       commit(FETCH_APP_TRANSFERS, res.data.data)
+
+      return res.data
     } catch (error) {
       throw error
     }

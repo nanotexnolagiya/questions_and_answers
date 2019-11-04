@@ -57,7 +57,7 @@ const onListening = async () => {
     if (databaseReload) {
       await Statuses.bulkCreate([
         { code: 'cancelled', name: 'Отменено' },
-        { code: 'expects', name: 'Ожидает' },
+        { code: 'await', name: 'Ожидает' },
         { code: 'confirmed', name: 'Подтверждено' },
         { code: 'in_the_way', name: 'В пути' },
         { code: 'delivered', name: 'Доставлено' },

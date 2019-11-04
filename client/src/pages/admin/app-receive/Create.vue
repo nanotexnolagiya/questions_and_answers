@@ -8,8 +8,8 @@
           </ul>
         </p>
         <div class="form-group">
-          <select class="form-control" @change="selectCategory">
-            <option value="0" selected disabled v-if="!updatedPage"> -- Выбрать категорию -- </option>
+          <select class="form-control" @change="selectCategory" v-if="!updatedPage">
+            <option value="0" selected disabled> -- Выбрать категорию -- </option>
             <option 
               v-for="cat in searchChildren(categories, 0)"
               :key="cat.id"
@@ -17,19 +17,20 @@
             >{{ cat.name }}</option>
           </select>
         </div>
-        <div class="form-group" v-for="(categoryTree, idx) in categoriesTree" :key="idx">
+        <div class="form-group" v-for="categoryTree in categoriesTree" :key="categoryTree.categoryId" :data="categoryTree.categoryId">
           <select class="form-control" @change="selectCategory">
-            <option value="0" selected disabled> -- Выбрать категорию -- </option>
+            <option value="0" :selected="!updatedPage" disabled> -- Выбрать категорию -- </option>
             <option 
-              v-for="cat in categoryTree"
+              v-for="cat in categoryTree.children"
+              :selected="updatedPage && cat.id === categoryTree.categoryId && category"
               :key="cat.id"
               :value="cat.id"
             >{{ cat.name }}</option>
           </select>
         </div>
-        <div class="form-group" v-for="(property, idp) in categoryProperties" :key="idp">
+        <div class="form-group" v-for="(property) in categoryProperties" :key="property.id">
           <label class="color-icon" :style="{'background': propertyValues[property.id]}" :for="`color_${property.id}`" v-if="property.type === 'color'">
-            <input type="color" :id="`color_${property.id}`" v-model="propertyValues[property.id]" />
+            <input type="color" @change="colorUpdate" :id="`color_${property.id}`" v-model="propertyValues[property.id]" />
           </label>
           <textarea 
             class="form-control" 
@@ -43,6 +44,17 @@
             :placeholder="property.name" 
             v-model="propertyValues[property.id]"
             />
+        </div>
+        <div class="form-group">
+          <select class="form-control" v-model="supplierId" v-if="updatedPage && users">
+            <option value="-1" disabled> -- Выбрать доставщика -- </option>
+            <option 
+              v-for="u in users"
+              :key="u.id"
+              :selected="u.id === supplierId"
+              :value="u.id"
+            >{{ u.name }}</option>
+          </select>
         </div>
         <div class="form-group">
           <select class="form-control" v-model="selectedStatus">
@@ -63,8 +75,9 @@
 <script>
 import { mapGetters } from 'vuex'
 import { FETCH_CATEGORIES, FETCH_CATEGORY_PROPERTIES } from 'actions/categories'
-import { ADD_APP_RECEIVE } from 'actions/appReceive'
+import { ADD_APP_RECEIVE, UPDATE_APP_RECEIVE, FETCH_APP_RECEIVE_BY_ID } from 'actions/appReceive'
 import { FETCH_STATUSES } from 'actions/statuses'
+import { FETCH_ROLES, FETCH_USERS } from 'actions/user'
 import { LOADING } from 'actions/common'
 
 export default {
@@ -73,18 +86,19 @@ export default {
       updatedPage: false,
       errors: [],
       selectedStatus: -1,
+      supplierId: -1,
       categoriesTree: [],
       propertyValues: {},
       category: null
     }
   },
   computed: {
-    ...mapGetters(['categories', 'categoryProperties', 'statuses'])
+    ...mapGetters(['categories', 'categoryProperties', 'statuses', 'appReceive', 'users'])
   },
   methods: {
     async save () {
       await this.$store.dispatch(LOADING, true)
-      const { category, propertyValues, selectedStatus } = this
+      const { category, propertyValues, selectedStatus, supplierId } = this
       this.errors = []
       const propertyIds = Object.keys(propertyValues)
       const properties = []
@@ -99,11 +113,17 @@ export default {
             value: propertyValues[key]
           })
         })
-        await this.$store.dispatch(ADD_APP_RECEIVE, {
+        const appReceive = {
           properties,
           category_id: category,
-          statusId: selectedStatus !== -1 ? selectedStatus : null
-        })
+          statusId: selectedStatus !== -1 ? selectedStatus : null,
+          supplierId: supplierId !== -1 ? supplierId : null
+        }
+        if (this.updatedPage) {
+          await this.$store.dispatch(UPDATE_APP_RECEIVE, { id: this.appReceive.id, ...appReceive })
+        } else {
+          await this.$store.dispatch(ADD_APP_RECEIVE, appReceive)
+        }
         this.$router.push('/app-receives')
       }
       await this.$store.dispatch(LOADING, false)
@@ -130,7 +150,7 @@ export default {
     clearChildren (categoryId) {
       const category = this.findById(categoryId)
 
-      if (category.parentId === 0) {
+      if (category.parentId === 0 && !this.updatedPage) {
         this.categoriesTree = []
         return
       }
@@ -141,26 +161,78 @@ export default {
         }
       }
     },
-    selectCategory (e) {
+    async selectCategory (e) {
+      if (this.updatedPage) {
+        alert('Пока что изменение категории не работает')
+        return false
+      }
       const categoryId = +e.target.value
-      const children = this.searchChildren(this.categories, categoryId)
+      await this.$store.dispatch(FETCH_CATEGORY_PROPERTIES, 'clear')
+      this.propertyValues = {}
+      this.category = null
+      const children = await this.searchChildren(this.categories, categoryId)
       if (children && children.length > 0) {
-        this.clearChildren(categoryId)
-        this.categoriesTree.push(children)
+        await this.clearChildren(categoryId)
+        await this.categoriesTree.push({
+          categoryId,
+          children
+        })
       } else {
         this.category = categoryId
-        this.$store.dispatch(FETCH_CATEGORY_PROPERTIES, categoryId)
+        await this.$store.dispatch(FETCH_CATEGORY_PROPERTIES, categoryId)
       }
+    },
+    setCategoriesTree (categoryId, currentCategory) {
+      const children = this.searchChildren(this.categories, categoryId)
+      if (children && children.length > 0) {
+        this.categoriesTree.push({
+          categoryId: currentCategory,
+          children
+        })
+        const category = this.findById(categoryId)
+        if (category) {
+          this.setCategoriesTree(category.parentId, category.id)
+        }
+      }
+    },
+    colorUpdate (e) {
+      const color = e.target.value
+      e.target.parentElement.style.background = color
     }
   },
   async created () {
-    const id = this.$route.params.id
+    const id = +this.$route.params.id
     await this.$store.dispatch(LOADING, true)
     await this.$store.dispatch(FETCH_CATEGORIES)
     await this.$store.dispatch(FETCH_STATUSES)
 
     if (id) {
       this.updatedPage = true
+      await this.$store.dispatch(FETCH_APP_RECEIVE_BY_ID, id)
+
+      if (this.appReceive) {
+        if (['in_the_way', 'delivered'].includes(this.appReceive.Status.code)) {
+          alert('Не возможно изменять подтверждённые заявки')
+          this.$router.push('/app-receives')
+        }
+        await this.$store.dispatch(FETCH_ROLES)
+        const supplier = this.$store.getters.roleByCode('supplier')
+        await this.$store.dispatch(FETCH_USERS, {
+          roleId: supplier.id
+        })
+        this.category = this.appReceive.Category.id
+        this.selectedStatus = this.appReceive.Status.id
+        if (this.appReceive.ApplicationReceiveSupplier) {
+          this.supplierId = this.appReceive.ApplicationReceiveSupplier.id
+        }
+        await this.setCategoriesTree(this.appReceive.Category.parentId, this.category)
+        await this.categoriesTree.reverse()
+        for (const property of this.appReceive.Properties) {
+          this.categoryProperties = property
+          this.propertyValues[property.id] = property.ApplicationReceivePropertyValues.value
+        }
+        await this.$store.dispatch(FETCH_CATEGORY_PROPERTIES, this.category)
+      }
       // update
     }
     await this.$store.dispatch(LOADING, false)

@@ -87,7 +87,7 @@ const add = async (req, res, next) => {
       }
     } else {
       statusStatement.where = {
-        code: "expects"
+        code: "await"
       }
     }
     const status = await Statuses.findOne(statusStatement);

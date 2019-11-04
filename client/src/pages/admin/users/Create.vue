@@ -51,7 +51,7 @@
 <script>
 import validator from 'validator'
 import { mapGetters } from 'vuex'
-import { FETCH_ROLES, ADD_USER, UPDATE_USER, FETCH_USERS } from '../../../store/actions/user'
+import { FETCH_ROLES, ADD_USER, UPDATE_USER, FETCH_USERS, CHECK_USER } from '../../../store/actions/user'
 import { LOADING } from 'actions/common'
 
 export default {
@@ -87,14 +87,15 @@ export default {
       this.showPassword = true
       this.password = this.randomPassword(12)
     },
-    save () {
+    async save () {
       const { name, password, cpassword, selectedRole, newPassword } = this
       let phone = this.phone
       phone = phone.replace(/\s/g, '')
+      phone = '+998' + phone
       this.errors = []
       if (!validator.isLength(name, { min: 3, max: 255 })) {
         this.errors.push('Имя должен быть больше 3 и менше 255')
-      } else if (phone.length !== 9) {
+      } else if (phone.length !== 13) {
         this.errors.push('Не правилный номер телефона')
       } else if (!selectedRole) {
         this.errors.push('Выберите роль')
@@ -104,30 +105,28 @@ export default {
         this.errors.push('Пароли не совпадает')
       } else if ((newPassword && (!validator.isLength(newPassword, {min: 6, max: 255}) && this.updatedPage))) {
         this.errors.push('Новый пароль должен быть больше 6 и менше 255')
+      } else if (await this.$store.dispatch(CHECK_USER, phone) && !this.updatedPage) {
+        this.errors.push('Такой пользователь уже существуеть')
       }
       if (this.errors.length === 0) {
-        phone = '+998' + phone
         if (!this.updatedPage) {
-          this.$store.dispatch(ADD_USER, {
+          await this.$store.dispatch(ADD_USER, {
             name,
             phone,
             role: selectedRole,
             password
-          }).then(() => {
-            this.$router.push('/users')
           })
         } else {
-          this.$store.dispatch(UPDATE_USER, {
+          await this.$store.dispatch(UPDATE_USER, {
             id: this.$route.params.userId,
             name,
             phone,
             role: selectedRole,
             password,
             newPassword
-          }).then(() => {
-            this.$router.push('/users')
           })
         }
+        this.$router.push('/users')
       }
     }
   },

@@ -1,4 +1,4 @@
-import { USER_REQUEST, FETCH_USERS, ADD_USER, UPDATE_USER, REMOVE_USER, FETCH_ROLES } from '../actions/user'
+import { USER_REQUEST, FETCH_USERS, ADD_USER, UPDATE_USER, REMOVE_USER, FETCH_ROLES, USER_REQUEST_UPDATE, CHECK_USER } from '../actions/user'
 import apiCall from '../../utils/api'
 import { AUTH_LOGOUT } from '../actions/auth'
 
@@ -13,10 +13,25 @@ const getters = {
   role: state => state.profile ? state.profile.Role.code : '',
   users: state => state.users,
   user: state => id => state.users.find(user => user.id === id),
-  roles: state => state.roles
+  roles: state => state.roles,
+  roleByCode: state => code => state.roles.find(role => role.code === code)
 }
 
 const actions = {
+  [CHECK_USER]: async ({ commit, getters }, phone) => {
+    try {
+      const res = await apiCall.post('/auth/check', {
+        phone
+      }, {
+        params: {
+          roken: getters.token
+        }
+      })
+      return res.data.ok
+    } catch (error) {
+      throw error
+    }
+  },
   [USER_REQUEST]: async ({ commit, getters }) => {
     try {
       const res = await apiCall.get('/users/me', { params: {
@@ -27,9 +42,18 @@ const actions = {
       throw error
     }
   },
-  [FETCH_USERS]: async ({ commit, getters }) => {
+  [USER_REQUEST_UPDATE]: async ({ commit, getters }, user) => {
     try {
-      const res = await apiCall.get('/users', { token: getters.token })
+      await apiCall.post('/users/me', user)
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_USERS]: async ({ commit, getters }, payload) => {
+    try {
+      const res = await apiCall.get('/users', { params: {
+        token: getters.token, ...payload
+      } })
       commit(FETCH_USERS, res.data.data)
     } catch (error) {
       throw error
@@ -37,7 +61,9 @@ const actions = {
   },
   [FETCH_ROLES]: async ({ commit, getters }) => {
     try {
-      const res = await apiCall.get('/roles', { token: getters.token })
+      const res = await apiCall.get('/roles', { params: {
+        token: getters.token
+      } })
       commit(FETCH_ROLES, res.data.data)
     } catch (error) {
       throw error

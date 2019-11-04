@@ -8,16 +8,16 @@ export default [
   {
     path: '/properties',
     component: Property,
-    beforeEnter: multiguard([isAuth, isRole('admin')])
+    beforeEnter: multiguard([isAuth, isRole(['admin'])])
   },
   {
     path: '/properties/create',
     component: Create,
-    beforeEnter: multiguard([isAuth, isRole('admin')])
+    beforeEnter: multiguard([isAuth, isRole(['admin'])])
   },
   {
     path: '/properties/:id',
     component: Create,
-    beforeEnter: multiguard([isAuth, isRole('admin')])
+    beforeEnter: multiguard([isAuth, isRole(['admin'])])
   }
 ]

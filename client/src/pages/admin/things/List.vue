@@ -24,6 +24,7 @@
       <table class="table">
         <thead class="thead-dark">
           <tr>
+            <th scope="col">#</th>
             <th scope="col">Категория</th>
             <th scope="col">Свойства</th>
             <th scope="col">Статус</th>
@@ -32,6 +33,7 @@
         </thead>
         <tbody>
           <tr v-for="thing in things" :key="thing.id">
+            <td v-text="thing.id"></td>
             <td v-text="thing.Category ? thing.Category.name : 'Неизвестно'"></td>
             <td v-html="thing.Properties.length > 0 ? propertiesToString(thing.Properties) : 'Пусто'"></td>
             <td v-text="thing.Status.name"></td>
@@ -50,6 +52,40 @@
       </table>
     </div>
     <div class="alert alert-info" v-else>Вещи не найдены</div>
+    <div class="row" v-if="things && things.length > 0">
+      <div class="col-md-2">
+        <label for="page_limit" class="d-flex form-inline">
+          Показать по: &nbsp;
+          <select class="form-control" id="page_limit" v-model="limit">
+            <option 
+              v-for="pageLimite in pageLimites" 
+              :key="pageLimite" 
+              :value="pageLimite"
+              v-text="pageLimite"
+            ></option>
+          </select>
+        </label>
+      </div>
+      <div class="col-md-10" v-if="pages > 1">
+        <nav aria-label="Page navigation example">
+          <ul class="pagination justify-content-end">
+            <li class="page-item" :class="{'disabled': page === 1}">
+              <a class="page-link" href="#" @click.prevent="setPage(page - 1)">
+                <i class="fa fa-chevron-left"></i>
+              </a>
+            </li>
+            <li class="page-item" :class="{'active': p === page}" v-for="p in pages" :key="p">
+              <a class="page-link" href="#" v-text="p" @click.prevent="setPage(p)"></a>
+            </li>
+            <li class="page-item" :class="{'disabled': page === pages}">
+              <a class="page-link" href="#" @click.prevent="setPage(page + 1)">
+                <i class="fa fa-chevron-right"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
   </pageLayout>
 </template>
 
@@ -61,7 +97,11 @@ import { LOADING } from 'actions/common'
 export default {
   data () {
     return {
-      filterStatus: -1
+      filterStatus: -1,
+      limit: 10,
+      pageLimites: [1, 10, 25, 50],
+      page: 1,
+      pages: 5
     }
   },
   computed: {
@@ -72,11 +112,35 @@ export default {
       let statusId = newValue
       if (statusId === -1) statusId = null
       await this.$store.dispatch(LOADING, true)
-      await this.$store.dispatch(FETCH_THINGS, { statusId })
+      this.page = 1
+      const data = await this.$store.dispatch(FETCH_THINGS, { statusId, limit: this.limit, page: this.page })
+      this.pages = data.pageCount
+      await this.$store.dispatch(LOADING, false)
+    },
+    async page (newValue) {
+      await this.$store.dispatch(LOADING, true)
+      const data = await this.$store.dispatch(FETCH_THINGS, {
+        limit: this.limit,
+        page: newValue
+      })
+      this.pages = data.pageCount
+      await this.$store.dispatch(LOADING, false)
+    },
+    async limit (newValue) {
+      await this.$store.dispatch(LOADING, true)
+      this.page = 1
+      const data = await this.$store.dispatch(FETCH_THINGS, {
+        limit: newValue,
+        page: this.page
+      })
+      this.pages = data.pageCount
       await this.$store.dispatch(LOADING, false)
     }
   },
   methods: {
+    setPage (page) {
+      this.page = page
+    },
     async remove (id) {
       await this.$store.dispatch(LOADING, true)
       await this.$store.dispatch(REMOVE_THING, id)
@@ -102,7 +166,11 @@ export default {
   },
   async created () {
     await this.$store.dispatch(LOADING, true)
-    await this.$store.dispatch(FETCH_THINGS)
+    const data = await this.$store.dispatch(FETCH_THINGS, {
+      limit: this.limit,
+      page: this.page
+    })
+    this.pages = data.pageCount
     await this.$store.dispatch(FETCH_STATUSES)
     await this.$store.dispatch(LOADING, false)
   }

@@ -2,6 +2,9 @@ const express = require('express')
 const router = express.Router()
 const { Users, Roles } = require('../models')
 const bcrypt = require('bcryptjs')
+const filter = require('../utils/filter');
+const order = require('../utils/order');
+const isRole = require('../routes/middleware/isRole');
 
 /**
  * @api {post} /signup/
@@ -38,13 +41,26 @@ const me = async (req, res, next) => {
 }
 
 const all = async (req, res, next) => {
-  const { limit, page = 1 } = req.query;
+  const { limit, page = 1, sorts } = req.query;
+
+  const columnsFilter = [
+    'id',
+    'roleId',
+    'name',
+    'phone'
+  ];
+  
   try {
+    const whereStatement = filter(req.query, columnsFilter);
+    const orderStatement = order(sorts);
+
     const count = await Users.count();
     const pages = limit ? Math.ceil(count / limit) : 0;
     const offset = limit ? limit * (page - 1) : null;
 
     const users = await Users.scope('userPublic').findAll({
+      where: whereStatement,
+      order: orderStatement,
       limit,
       offset,
       include: [
@@ -132,11 +148,43 @@ const update = async (req, res, next) => {
   }
 }
 
-router.get('/', all);
-router.post('/', add);
-router.delete('/:id', remove);
-router.put('/:id', update);
+const meUpdate = async (req, res, next) => {
+  const { name, phone, password, newPassword } = req.body;
+  try {
+
+    const user = await Users.findOne({
+      where: {
+        id: req.userData.userId
+      }
+    });
+
+    const match = await bcrypt.compare(password, user.password)
+
+    if (match && newPassword) {
+      const hash = await bcrypt.hash(newPassword, 10)
+
+      user.password = hash
+    }
+
+    if (name) user.name = name
+    if (phone) user.phone = phone
+
+    await user.save()
+
+    res.status(202).json({
+      ok: true
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+router.get('/', isRole(['admin']), all);
+router.post('/', isRole(['admin']), add);
+router.delete('/:id', isRole(['admin']), remove);
+router.put('/:id', isRole(['admin']), update);
 router.get('/me', me);
+router.post('/me', meUpdate);
 
 
 module.exports = router;

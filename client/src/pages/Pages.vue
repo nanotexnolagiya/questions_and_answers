@@ -1,8 +1,5 @@
 <template>
-  <pageLayout>
-    <adminHome v-if="role === 'admin'" />
-    <userHome v-if="role === 'user'" />
-  </pageLayout>
+  <component :is="componentByRole('Home')"></component>
 </template>
 
 <script>
@@ -19,6 +16,11 @@ export default {
   },
   computed: {
     ...mapGetters(['role'])
+  },
+  methods: {
+    componentByRole (component) {
+      return this.role + component
+    }
   }
 }
 </script>

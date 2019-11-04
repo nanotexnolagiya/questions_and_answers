@@ -144,7 +144,27 @@ const signin = async (req, res, next) => {
   }
 }
 
+const checkUser = async (req, res, next) => {
+  const { phone } = req.body
+  try {
+    const user = await Users.findOne({
+      where: {
+        phone: phone
+      }
+    });
+
+    if (user) {
+      res.json({ ok: true });
+    } else {
+      res.json({ ok: false });
+    }
+  } catch (error) {
+    next(error);
+  }
+}
+
 router.post('/signin', signin)
 router.post('/signup', signup)
+router.post('/check', checkUser)
 
 module.exports = router

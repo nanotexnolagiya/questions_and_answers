@@ -3,7 +3,6 @@
     <form class="center-form" @submit.prevent="signup">
       <h3 class="text-center mb-3">Sign Up</h3>
       <p v-if="errors.length" class="mb-3 alert alert-danger">
-        <b>Пожалуйста исправьте указанные ошибки:</b>
         <ul>
           <li v-for="error in errors" :key="error">{{ error }}</li>
         </ul>
@@ -46,6 +45,7 @@
 <script>
 import validator from 'validator'
 import { AUTH_SIGNUP } from 'actions/auth'
+import { CHECK_USER } from 'actions/user'
 
 export default {
   data () {
@@ -73,7 +73,7 @@ export default {
     }
   },
   methods: {
-    signup () {
+    async signup () {
       const { name, password, cpassword } = this
       let phone = this.phone
       phone = phone.replace(/\s/g, '')
@@ -81,12 +81,14 @@ export default {
       this.errors = []
       if (!validator.isLength(name, { min: 3, max: 255 })) {
         this.errors.push('Имя должен быть больше 3 и менше 255')
-      } else if (!validator.isNumeric(phone) && phone.length !== 9) {
+      } else if (!validator.isNumeric(phone) && phone.length !== 13) {
         this.errors.push('Не правилный номер телефона')
       } else if (!validator.isLength(password, {min: 6, max: 255})) {
         this.errors.push('Парол должен быть больше 6 и менше 255')
       } else if (password !== cpassword) {
         this.errors.push('Пароли не совпадает')
+      } else if (await this.$store.dispatch(CHECK_USER, phone)) {
+        this.errors.push('Такой пользователь уже существуеть')
       }
       if (this.errors.length === 0) {
         this.verifyPhone(

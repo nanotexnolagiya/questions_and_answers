@@ -1,5 +1,7 @@
 <template>
-  <h1>User Home Page</h1>
+  <pageLayout>
+    <h1>User Home Page</h1>
+  </pageLayout>
 </template>
 
 <script>

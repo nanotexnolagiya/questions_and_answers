@@ -51,6 +51,16 @@ body {
   overflow-x: hidden;
 }
 
+a {
+  color: #28a745;
+}
+
+.action-nav .nav-link {
+  margin-right: 10px;
+  border: 1px solid #28a645;
+  border-radius: 0.25rem;
+}
+
 #sidebar-wrapper {
   min-height: 100vh;
   margin-left: -15rem;
@@ -145,6 +155,11 @@ table tr td i {
     flex: 0 0 20%;
     max-width: 20%;
   }
+}
+
+.progress {
+  height: 12px;
+  border-radius: 0;
 }
 
 @media (min-width: 768px) {
