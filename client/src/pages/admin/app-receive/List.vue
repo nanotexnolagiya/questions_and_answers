@@ -41,7 +41,7 @@
             <td v-html="appReceive.Properties.length > 0 ? propertiesToString(appReceive.Properties) : 'Пусто'"></td>
             <td v-text="appReceive.ApplicationReceiveUser ? appReceive.ApplicationReceiveUser.name : 'Неизвестно'"></td>
             <td v-text="appReceive.ApplicationReceiveSupplier ? appReceive.ApplicationReceiveSupplier.name : 'Неизвестно'"></td>
-            <td v-text="appReceive.Thing ? appReceive.Thing.id : 'Не найдено'"></td>
+            <td v-text="appReceive.Thing ? 'Найдено' : 'Не найдено'"></td>
             <td v-text="appReceive.Status.name"></td>
             <td>
               <div class="d-flex">
@@ -111,7 +111,7 @@ export default {
       limit: 10,
       pageLimites: [1, 10, 25, 50],
       page: 1,
-      pages: 5
+      pages: 0
     }
   },
   computed: {
@@ -153,7 +153,11 @@ export default {
     async remove (id) {
       await this.$store.dispatch(LOADING, true)
       await this.$store.dispatch(REMOVE_APP_RECEIVE, id)
-      await this.$store.dispatch(FETCH_APP_RECEIVES)
+      this.page = 1
+      await this.$store.dispatch(FETCH_APP_RECEIVES, {
+        limit: this.limit,
+        page: this.page
+      })
       await this.$store.dispatch(LOADING, false)
     },
     propertiesToString (properties) {

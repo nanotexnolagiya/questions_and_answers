@@ -6,7 +6,12 @@ import {
   UPDATE_APP_TRANSFER,
   REMOVE_APP_TRANSFER,
   ADD_UPLOADS,
-  FETCH_UPLOADS
+  FETCH_UPLOADS,
+  FETCH_ACCOUNT_APP_TRANSFERS,
+  FETCH_ACCOUNT_APP_TRANSFER_BY_ID,
+  ADD_ACCOUNT_APP_TRANSFER,
+  UPDATE_ACCOUNT_APP_TRANSFER,
+  REMOVE_ACCOUNT_APP_TRANSFER,
 } from '../actions/appTransfer'
 
 const state = {
@@ -92,6 +97,68 @@ const actions = {
   [REMOVE_APP_TRANSFER]: async ({ getters }, id) => {
     try {
       await apiCall.delete('/app-transfers/' + id, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_ACCOUNT_APP_TRANSFERS]: async ({ getters, commit }, payload) => {
+    try {
+      const res = await apiCall.get('/account/app-transfers', {
+        params: {
+          token: getters.token,
+          ...payload
+        }
+      })
+
+      commit(FETCH_APP_TRANSFERS, res.data.data)
+
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_ACCOUNT_APP_TRANSFER_BY_ID]: async ({ getters, commit }, id) => {
+    try {
+      const res = await apiCall.get('/account/app-transfers/' + id, {
+        params: {
+          token: getters.token
+        }
+      })
+
+      commit(FETCH_APP_TRANSFER_BY_ID, res.data.data)
+    } catch (error) {
+      throw error
+    }
+  },
+  [ADD_ACCOUNT_APP_TRANSFER]: async ({ getters }, payload) => {
+    try {
+      await apiCall.post('/account/app-transfers', payload, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
+  [UPDATE_ACCOUNT_APP_TRANSFER]: async ({ getters }, payload) => {
+    try {
+      await apiCall.put('/account/app-transfers/' + payload.id, payload, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
+  [REMOVE_ACCOUNT_APP_TRANSFER]: async ({ getters }, id) => {
+    try {
+      await apiCall.delete('/account/app-transfers/' + id, {
         params: {
           token: getters.token
         }

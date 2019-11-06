@@ -8,14 +8,8 @@
       <div class="col-sm-9">
         <div class="d-flex justify-content-end">
           <ul class="nav action-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="#">Ожидаюшие подтверждение</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Подтверждение</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Доставляемые</a>
+            <li class="nav-item" v-for="nav in navs" :key="nav">
+              <a class="nav-link" href="#" @click.prevent="getByStatus(nav.status)" v-text="nav.name"></a>
             </li>
           </ul>
         </div>
@@ -44,9 +38,6 @@
             <td v-text="appTransfer.Status.name"></td>
             <td>
               <div class="d-flex">
-                <a :href="`#/${appTransfer.id}`" v-if="appTransfer.Status.code === 'await'" @click.prevent="confirm(appTransfer)">
-                  <i class="fas fa-check text-success"></i>
-                </a>
                 <router-link :to="`/app-transfers/${appTransfer.id}`">
                   <i class="fas fa-edit text-warning" ></i>
                 </router-link>
@@ -99,7 +90,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { FETCH_APP_TRANSFERS, REMOVE_APP_TRANSFER, UPDATE_APP_TRANSFER } from 'actions/appTransfer'
+import { FETCH_ACCOUNT_APP_TRANSFERS, REMOVE_ACCOUNT_APP_TRANSFER } from 'actions/appTransfer'
 import { FETCH_STATUSES } from 'actions/statuses'
 import { LOADING } from 'actions/common'
 export default {
@@ -108,7 +99,12 @@ export default {
       limit: 10,
       pageLimites: [1, 10, 25, 50],
       page: 1,
-      pages: 5
+      pages: 0,
+      navs: [
+        { name: 'Ожидает', status: 'await' },
+        { name: 'Подтверждено', status: 'confirmed' },
+        { name: 'В пути', status: 'in_the_way' }
+      ]
     }
   },
   computed: {
@@ -117,21 +113,17 @@ export default {
   watch: {
     async page (newValue) {
       await this.$store.dispatch(LOADING, true)
-      const data = await this.$store.dispatch(FETCH_APP_TRANSFERS, {
-        limit: this.limit,
+      await this.fetch({
         page: newValue
       })
-      this.pages = data.pageCount
       await this.$store.dispatch(LOADING, false)
     },
     async limit (newValue) {
       await this.$store.dispatch(LOADING, true)
       this.page = 1
-      const data = await this.$store.dispatch(FETCH_APP_TRANSFERS, {
-        limit: newValue,
-        page: this.page
+      await this.fetch({
+        limit: newValue
       })
-      this.pages = data.pageCount
       await this.$store.dispatch(LOADING, false)
     }
   },
@@ -139,30 +131,36 @@ export default {
     setPage (page) {
       this.page = page
     },
+    async fetch (params) {
+      const status = await this.$store.getters.statusByCode('cancelled')
+      const data = await this.$store.dispatch(FETCH_ACCOUNT_APP_TRANSFERS, {
+        statusId: `not:${status.id}`,
+        page: this.page,
+        limit: this.limit,
+        ...params
+      })
+      this.pages = data.pageCount
+    },
     async remove (id) {
       await this.$store.dispatch(LOADING, true)
-      await this.$store.dispatch(REMOVE_APP_TRANSFER, id)
-      await this.$store.dispatch(FETCH_APP_TRANSFERS)
+      await this.$store.dispatch(REMOVE_ACCOUNT_APP_TRANSFER, id)
+      await this.fetch()
       await this.$store.dispatch(LOADING, false)
     },
-    async confirm (appTransfer) {
-      if (confirm('Вы точно этого хотите')) {
-        await this.$store.dispatch(LOADING, true)
-        const confirmedStatus = this.$store.getters.statusByCode('confirmed')
-        await this.$store.dispatch(UPDATE_APP_TRANSFER, { ...appTransfer, statusId: confirmedStatus.id })
-        await this.$store.dispatch(FETCH_APP_TRANSFERS, { statusId: this.filterStatus === -1 ? null : this.filterStatus })
-        await this.$store.dispatch(LOADING, false)
-      }
+    async getByStatus (statusCode) {
+      this.page = 1
+      await this.$store.dispatch(LOADING, true)
+      const status = await this.$store.getters.statusByCode(statusCode)
+      await this.fetch({
+        statusId: status.id
+      })
+      await this.$store.dispatch(LOADING, false)
     }
   },
   async created () {
     await this.$store.dispatch(LOADING, true)
-    const data = await this.$store.dispatch(FETCH_APP_TRANSFERS, {
-      limit: this.limit,
-      page: this.page
-    })
-    this.pages = data.pageCount
     await this.$store.dispatch(FETCH_STATUSES)
+    await this.fetch()
     await this.$store.dispatch(LOADING, false)
   }
 }

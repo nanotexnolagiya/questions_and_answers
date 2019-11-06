@@ -4,6 +4,8 @@ const {
   ApplicationReceive,
   Categories,
   Properties,
+  ApplicationTransfer,
+  Uploads,
   Users,
   Statuses,
   Things,
@@ -14,7 +16,7 @@ const order = require('../utils/order');
 const arrayEqual = require('../utils/arrayEqual');
 
 
-const all = async (req, res, next) => {
+const allReceives = async (req, res, next) => {
   const { limit, page = 1, sorts } = req.query;
 
   const columnsFilter = [
@@ -26,7 +28,11 @@ const all = async (req, res, next) => {
     whereStatement.userId = req.userData.userId
     const orderStatement = order(sorts);
     
-    const count = await ApplicationReceive.count();
+    const count = await ApplicationReceive.count({
+      where: {
+        userId: whereStatement.userId
+      }
+    });
     const pages = limit ? Math.ceil(count / limit) : 0;
     const offset = limit ? limit * (page - 1) : null;
 
@@ -54,7 +60,7 @@ const all = async (req, res, next) => {
   }
 };
 
-const single = async (req, res, next) => {
+const singleReceives = async (req, res, next) => {
   const id = req.params.id;
   try {
     const data = await ApplicationReceive.findOne({
@@ -81,7 +87,7 @@ const single = async (req, res, next) => {
   }
 };
 
-const add = async (req, res, next) => {
+const addReceives = async (req, res, next) => {
   const { properties, category_id } = req.body;
 
   try {
@@ -153,8 +159,8 @@ const add = async (req, res, next) => {
   }
 };
 
-const update = async (req, res, next) => {
-  const { properties, category_id, statusId, thingId, supplierId } = req.body;
+const updateReceives = async (req, res, next) => {
+  const { properties, category_id, supplierId } = req.body;
   const id = req.params.id;
 
   try {
@@ -256,7 +262,7 @@ const update = async (req, res, next) => {
   }
 };
 
-const remove = async (req, res, next) => {
+const removeReceives = async (req, res, next) => {
   const id = req.params.id;
 
   try {
@@ -268,7 +274,8 @@ const remove = async (req, res, next) => {
 
     const data = await ApplicationReceive.findOne({
       where: {
-        id
+        id,
+        userId: req.userData.userId
       }
     });
 
@@ -285,11 +292,193 @@ const remove = async (req, res, next) => {
   }
 };
 
-router.get('/app-receives', all);
-router.get('/app-receives/:id', single);
-router.put('/app-receives/:id', update);
-router.post('/app-receives/', add);
-router.delete('/app-receives/:id', remove);
+// ---------------------------------------------------------
+
+const allTransfers = async (req, res, next) => {
+  const { limit, page = 1, sorts } = req.query;
+
+  const columnsFilter = [
+    'statusId'
+  ];
+  
+  try {
+    const whereStatement = filter(req.query, columnsFilter);
+    const orderStatement = order(sorts);
+
+    whereStatement.userId = req.userData.userId
+    
+    const count = await ApplicationTransfer.count({
+      where: {
+        userId: whereStatement.userId
+      }
+    });
+    const pages = limit ? Math.ceil(count / limit) : 0;
+    const offset = limit ? limit * (page - 1) : null;
+
+    const data = await ApplicationTransfer.findAll({
+      where: whereStatement,
+      order: orderStatement,
+      limit,
+      offset,
+      include: [
+        { model: Uploads },
+        { model: Users, as: "ApplicationTransferSupplier" },
+        { model: Statuses }
+      ]
+    });
+
+    res.status(200).json({
+      ok: true,
+      data,
+      pageCount: pages
+    });
+  } catch (error) {
+    next(error)
+  }
+};
+
+const singleTransfers = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    const data = await ApplicationTransfer.findOne({
+      where: {
+        id,
+        userId: req.userData.userId
+      },
+      include: [
+        { model: Uploads },
+        { model: Users, as: "ApplicationTransferSupplier" },
+        { model: Statuses }
+      ]
+    });
+
+    if (!data) throw new ResponseException("Application Transfer not found", 400);
+
+    res.status(200).json({
+      ok: true,
+      data
+    });
+  } catch (error) {
+    next(error)
+  }
+};
+
+const addTransfers = async (req, res, next) => {
+  const { text, upload_ids = [] } = req.body;
+
+  try {
+    const status = await Statuses.findOne({
+      where: {
+        code: "await"
+      }
+    });
+
+    if (!status) throw new ResponseException("Status not found");
+
+    const data = await ApplicationTransfer.create({
+      userId: req.userData.userId,
+      text,
+      statusId: status.id
+    });
+
+    if (upload_ids.length !== 0) {
+      const uploads = await Uploads.findAll({
+        where: {
+          id: {
+            $in: upload_ids
+          }
+        }
+      });
+
+      await data.addUploads(uploads);
+    }
+
+    res.status(200).json({
+      ok: true
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateTransfers = async (req, res, next) => {
+  const { text, upload_ids = [] } = req.body;
+  const id = req.params.id;
+
+  try {
+
+    const data = await ApplicationTransfer.findOne({
+      where: {
+        id,
+        userId: req.userData.userId
+      }
+    });
+
+    if (text) data.text = text
+
+    if (upload_ids.length !== 0) {
+      const uploads = await Uploads.findAll({
+        where: {
+          id: {
+            $in: upload_ids
+          }
+        }
+      });
+
+      await data.setUploads(uploads);
+    }
+
+    await data.save();
+
+    res.status(200).json({
+      ok: true
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const removeTransfers = async (req, res, next) => {
+  const id = req.params.id;
+
+  try {
+    const data = await ApplicationTransfer.findOne({
+      where: {
+        id,
+        userId: req.userData.userId
+      }
+    });
+    const cancelledStatus = await Statuses.findOne({
+      where: {
+        code: 'cancelled'
+      }
+    });
+
+    if (!data) throw new ResponseException('Application Transfer not found', 400)
+
+    data.statusId = cancelledStatus.id
+
+    await data.save()
+
+    res.status(200).json({
+      ok: true
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+router.get('/app-receives', allReceives);
+router.get('/app-receives/:id', singleReceives);
+router.put('/app-receives/:id', updateReceives);
+router.post('/app-receives/', addReceives);
+router.delete('/app-receives/:id', removeReceives);
+// -----------------------------------------------------
+router.get('/app-transfers', allTransfers);
+router.get('/app-transfers/:id', singleTransfers);
+router.put('/app-transfers/:id', updateTransfers);
+router.post('/app-transfers/', addTransfers);
+router.delete('/app-transfers/:id', removeTransfers);
 
 
 module.exports = router;

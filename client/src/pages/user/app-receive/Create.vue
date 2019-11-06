@@ -38,33 +38,12 @@ s<template>
             v-model="propertyValues[property.id]"
             :placeholder="property.name" ></textarea>
           <input 
-            :type="property.type" 
-            v-else 
-            class="form-control" 
-            :placeholder="property.name" 
+            :type="property.type"
+            v-else
+            class="form-control"
+            :placeholder="property.name"
             v-model="propertyValues[property.id]"
             />
-        </div>
-        <div class="form-group">
-          <select class="form-control" v-model="supplierId" v-if="updatedPage && users">
-            <option value="-1" disabled> -- Выбрать доставщика -- </option>
-            <option 
-              v-for="u in users"
-              :key="u.id"
-              :selected="u.id === supplierId"
-              :value="u.id"
-            >{{ u.name }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <select class="form-control" v-model="selectedStatus">
-            <option value="-1" disabled v-if="!updatedPage"> -- Выбрать Статус -- </option>
-            <option 
-              v-for="status in statuses" 
-              :key="status.id" 
-              :value="status.id"
-            >{{ status.name }}</option>
-          </select>
         </div>
         <button type="submit" class="btn btn-success">{{ updatedPage ? 'Обновить' : 'Сохранить' }}</button>
       </form>
@@ -75,9 +54,8 @@ s<template>
 <script>
 import { mapGetters } from 'vuex'
 import { FETCH_CATEGORIES, FETCH_CATEGORY_PROPERTIES } from 'actions/categories'
-import { ADD_APP_RECEIVE, UPDATE_APP_RECEIVE, FETCH_APP_RECEIVE_BY_ID } from 'actions/appReceive'
+import { ADD_ACCOUNT_APP_RECEIVE, UPDATE_ACCOUNT_APP_RECEIVE, FETCH_ACCOUNT_APP_RECEIVE_BY_ID } from 'actions/appReceive'
 import { FETCH_STATUSES } from 'actions/statuses'
-import { FETCH_ROLES, FETCH_USERS } from 'actions/user'
 import { LOADING } from 'actions/common'
 
 export default {
@@ -85,20 +63,18 @@ export default {
     return {
       updatedPage: false,
       errors: [],
-      selectedStatus: -1,
-      supplierId: -1,
       categoriesTree: [],
       propertyValues: {},
       category: null
     }
   },
   computed: {
-    ...mapGetters(['categories', 'categoryProperties', 'statuses', 'appReceive', 'users'])
+    ...mapGetters(['categories', 'categoryProperties', 'appReceive'])
   },
   methods: {
     async save () {
       await this.$store.dispatch(LOADING, true)
-      const { category, propertyValues, selectedStatus, supplierId } = this
+      const { category, propertyValues } = this
       this.errors = []
       const propertyIds = Object.keys(propertyValues)
       const properties = []
@@ -115,14 +91,12 @@ export default {
         })
         const appReceive = {
           properties,
-          category_id: category,
-          statusId: selectedStatus !== -1 ? selectedStatus : null,
-          supplierId: supplierId !== -1 ? supplierId : null
+          category_id: category
         }
         if (this.updatedPage) {
-          await this.$store.dispatch(UPDATE_APP_RECEIVE, { id: this.appReceive.id, ...appReceive })
+          await this.$store.dispatch(UPDATE_ACCOUNT_APP_RECEIVE, { id: this.appReceive.id, ...appReceive })
         } else {
-          await this.$store.dispatch(ADD_APP_RECEIVE, appReceive)
+          await this.$store.dispatch(ADD_ACCOUNT_APP_RECEIVE, appReceive)
         }
         this.$router.push('/app-receives')
       }
@@ -208,23 +182,14 @@ export default {
 
     if (id) {
       this.updatedPage = true
-      await this.$store.dispatch(FETCH_APP_RECEIVE_BY_ID, id)
+      await this.$store.dispatch(FETCH_ACCOUNT_APP_RECEIVE_BY_ID, id)
 
       if (this.appReceive) {
         if (['in_the_way', 'delivered'].includes(this.appReceive.Status.code)) {
           alert('Не возможно изменять подтверждённые заявки')
           this.$router.push('/app-receives')
         }
-        await this.$store.dispatch(FETCH_ROLES)
-        const supplier = this.$store.getters.roleByCode('supplier')
-        await this.$store.dispatch(FETCH_USERS, {
-          roleId: supplier.id
-        })
         this.category = this.appReceive.Category.id
-        this.selectedStatus = this.appReceive.Status.id
-        if (this.appReceive.ApplicationReceiveSupplier) {
-          this.supplierId = this.appReceive.ApplicationReceiveSupplier.id
-        }
         await this.setCategoriesTree(this.appReceive.Category.parentId, this.category)
         await this.categoriesTree.reverse()
         for (const property of this.appReceive.Properties) {

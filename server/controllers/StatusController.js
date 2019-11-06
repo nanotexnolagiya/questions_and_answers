@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const { Statuses } = require('../models')
+const isRole = require('../routes/middleware/isRole');
 
 const all = async (req, res, next) => {
   const { limit, page = 1 } = req.query;
@@ -48,6 +49,6 @@ const update = async (req, res, next) => {
 }
 
 router.get('/', all);
-router.put('/:id', update)
+router.put('/:id', isRole(['admin']), update)
 
 module.exports = router;

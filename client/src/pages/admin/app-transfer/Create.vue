@@ -22,7 +22,7 @@
         </div>
         <div class="form-group">
           <div class="custom-file">
-            <input type="file" ref="uploads" @change="upload" class="custom-file-input" id="customFile" multiple="multiple">
+            <input type="file" accept="image/*" ref="uploads" @change="upload" class="custom-file-input" id="customFile" multiple="multiple">
             <label class="custom-file-label" for="customFile">Выбрать файл</label>
           </div>
         </div>

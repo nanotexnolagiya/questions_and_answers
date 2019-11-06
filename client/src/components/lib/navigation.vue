@@ -33,9 +33,9 @@ export default {
         // Admin
         { name: 'Категории', path: '/categories', roles: ['admin'] },
         { name: 'Свойства', path: '/properties', roles: ['admin'] },
-        { name: 'Заявки для передачи вещи', path: '/app-transfers', roles: ['admin', 'user', 'supplier', 'storekeeper'] },
+        { name: 'Заявки для передачи вещей на склад', path: '/app-transfers', roles: ['admin', 'user', 'supplier', 'storekeeper'] },
         { name: 'Вещи', path: '/things', roles: ['admin', 'storekeeper'] },
-        { name: 'Заявки для получении вещи', path: '/app-receives', roles: ['admin', 'user', 'supplier', 'storekeeper'] },
+        { name: 'Заявки для получении вещей из склада', path: '/app-receives', roles: ['admin', 'user', 'supplier', 'storekeeper'] },
         { name: 'Пользователи', path: '/users', roles: ['admin'] },
         { name: 'Медиа', path: '/media', roles: ['admin'] },
         { name: 'Роли', path: '/roles', roles: ['admin'] },

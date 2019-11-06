@@ -101,6 +101,52 @@ const actions = {
       throw error
     }
   },
+  [FETCH_ACCOUNT_APP_RECEIVE_BY_ID]: async ({ getters, commit }, id) => {
+    try {
+      const res = await apiCall.get('/account/app-receives/' + id, {
+        params: {
+          token: getters.token
+        }
+      })
+
+      commit(FETCH_APP_RECEIVE_BY_ID, res.data.data)
+    } catch (error) {
+      throw error
+    }
+  },
+  [ADD_ACCOUNT_APP_RECEIVE]: async ({ getters }, payload) => {
+    try {
+      await apiCall.post('/account/app-receives', payload, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
+  [UPDATE_ACCOUNT_APP_RECEIVE]: async ({ getters }, payload) => {
+    try {
+      await apiCall.put('/account/app-receives/' + payload.id, payload, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
+  [REMOVE_ACCOUNT_APP_RECEIVE]: async ({ getters }, id) => {
+    try {
+      await apiCall.delete('/account/app-receives/' + id, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
 }
 
 const mutations = {

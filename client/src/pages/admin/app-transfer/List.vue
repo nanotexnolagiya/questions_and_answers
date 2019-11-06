@@ -110,7 +110,7 @@ export default {
       limit: 10,
       pageLimites: [1, 10, 25, 50],
       page: 1,
-      pages: 5
+      pages: 0
     }
   },
   computed: {
@@ -153,7 +153,11 @@ export default {
     async remove (id) {
       await this.$store.dispatch(LOADING, true)
       await this.$store.dispatch(REMOVE_APP_TRANSFER, id)
-      await this.$store.dispatch(FETCH_APP_TRANSFERS)
+      this.page = 1
+      await this.$store.dispatch(FETCH_APP_TRANSFERS, {
+        limit: this.limit,
+        page: this.page
+      })
       await this.$store.dispatch(LOADING, false)
     },
     async confirm (appTransfer) {

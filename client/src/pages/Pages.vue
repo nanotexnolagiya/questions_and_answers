@@ -5,6 +5,8 @@
 <script>
 import adminHome from '@/pages/admin/Home'
 import userHome from '@/pages/user/Home'
+import supplierHome from '@/pages/supplier/Home'
+import storekeeperHome from '@/pages/storekeeper/Home'
 import { mapGetters } from 'vuex'
 export default {
   data () {
@@ -12,7 +14,9 @@ export default {
   },
   components: {
     adminHome,
-    userHome
+    userHome,
+    supplierHome,
+    storekeeperHome
   },
   computed: {
     ...mapGetters(['role'])

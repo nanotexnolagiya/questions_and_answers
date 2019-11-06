@@ -61,6 +61,11 @@ a {
   border-radius: 0.25rem;
 }
 
+.action-nav .nav-link:hover {
+  color: #ffffff;
+  background-color: #28a645;
+}
+
 #sidebar-wrapper {
   min-height: 100vh;
   margin-left: -15rem;
@@ -103,6 +108,7 @@ a {
   width: 12px;
   height: 12px;
   border-radius: 10px;
+  box-shadow: 0px 0px 5px #9e9e9e;
 }
 
 [type="color"] {
