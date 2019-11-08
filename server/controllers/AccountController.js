@@ -402,7 +402,7 @@ const addTransfers = async (req, res, next) => {
 };
 
 const updateTransfers = async (req, res, next) => {
-  const { text, upload_ids = [] } = req.body;
+  const { text, upload_ids = [], delivered } = req.body;
   const id = req.params.id;
 
   try {
@@ -413,6 +413,14 @@ const updateTransfers = async (req, res, next) => {
         userId: req.userData.userId
       }
     });
+
+    const deliveredStatus = await Statuses.findOne({
+      where: {
+        code: 'delivered'
+      }
+    });
+
+    if (delivered) data.statusId = deliveredStatus.id 
 
     if (text) data.text = text
 
