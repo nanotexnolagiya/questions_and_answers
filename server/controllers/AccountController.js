@@ -160,7 +160,7 @@ const addReceives = async (req, res, next) => {
 };
 
 const updateReceives = async (req, res, next) => {
-  const { properties, category_id, supplierId } = req.body;
+  const { properties, category_id, delivered } = req.body;
   const id = req.params.id;
 
   try {
@@ -173,6 +173,14 @@ const updateReceives = async (req, res, next) => {
 
     if(!appReceive) throw new ResponseException('Application not found'); 
 
+    const deliveredStatus = await Statuses.findOne({
+      where: {
+        code: 'delivered'
+      }
+    });
+
+    if (delivered) data.statusId = deliveredStatus.id 
+
     if (category_id) {
       const category = await Categories.findOne({
         where: {
@@ -181,18 +189,6 @@ const updateReceives = async (req, res, next) => {
       });
       if (!category) throw new ResponseException('Category not found', 400);
       appReceive.categoryId = category.id
-    }
-
-    if (supplierId) {
-      const supplier = await Users.findOne({
-        where: {
-          id: supplierId
-        }
-      });
-
-      if (!supplier) throw new ResponseException('Supplier not found', 400);
-
-      appReceive.supplierId = supplier.id
     }
 
     if (properties && properties.length > 0) {
@@ -413,6 +409,8 @@ const updateTransfers = async (req, res, next) => {
         userId: req.userData.userId
       }
     });
+
+    if(!data) throw new ResponseException('Application not found'); 
 
     const deliveredStatus = await Statuses.findOne({
       where: {
