@@ -13,7 +13,8 @@ const {
   UserController,
   RoleController,
   StatusController,
-  AccountController
+  AccountController,
+  SupplierController
 } = require('../../controllers')
 
 router.use('/auth', AuthController)
@@ -30,5 +31,6 @@ router.use('/roles', isRole(['admin']), RoleController)
 router.use('/statuses', StatusController)
 router.use('/things', isRole(['admin']), ThingController)
 router.use('/account', AccountController)
+router.use('/supplier', SupplierController)
 
 module.exports = router

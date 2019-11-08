@@ -266,3 +266,5 @@ router.put('/app-receives/:id/in-the-way', isRole(['supplier']), inTheWayAppRece
 router.get('/app-transfers', isRole(['supplier']), allTransfers);
 router.get('/app-transfers/confirmed', isRole(['supplier']), confirmedTransfers);
 router.put('/app-transfers/:id/in-the-way', isRole(['supplier']), inTheWayAppTransfer);
+
+module.exports = router;

@@ -112,6 +112,11 @@ export default {
         { name: 'Ожидает', status: 'await' },
         { name: 'Подтверждено', status: 'confirmed' },
         { name: 'В пути', status: 'in_the_way' }
+      ],
+      supplierNavs: [
+        { name: 'Нужно доставить', status: 'confirmed' },
+        { name: 'Доставляемые', status: 'in_the_way' },
+        { name: 'Доставленные', status: 'delivered' }
       ]
     }
   },
@@ -190,6 +195,15 @@ export default {
         statusId: status.id
       })
       await this.$store.dispatch(LOADING, false)
+    },
+    async supplierActions (code) {
+      switch (code) {
+        case 'confirmed':
+          // this.$store.dispatch();
+          break
+        default:
+          break
+      }
     }
   },
   async created () {
