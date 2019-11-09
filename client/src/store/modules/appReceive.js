@@ -9,7 +9,12 @@ import {
   FETCH_ACCOUNT_APP_RECEIVE_BY_ID,
   ADD_ACCOUNT_APP_RECEIVE,
   UPDATE_ACCOUNT_APP_RECEIVE,
-  REMOVE_ACCOUNT_APP_RECEIVE
+  REMOVE_ACCOUNT_APP_RECEIVE,
+  FETCH_SUPPLIER_APP_RECEIVES,
+  FETCH_SUPPLIER_APP_RECEIVES_CONFIRMED,
+  FETCH_SUPPLIER_APP_RECEIVES_DELIVERED,
+  SET_SEPPLIER_APP_RECEIVE_DELIVERED,
+  SET_SEPPLIER_APP_RECEIVE_IN_THE_WAY
 } from '../actions/appReceive'
 
 const state = {
@@ -139,6 +144,76 @@ const actions = {
   [REMOVE_ACCOUNT_APP_RECEIVE]: async ({ getters }, id) => {
     try {
       await apiCall.delete('/account/app-receives/' + id, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_SUPPLIER_APP_RECEIVES]: async ({ getters, commit }, payload) => {
+    try {
+      const res = await apiCall.get('/supplier/app-receives', {
+        params: {
+          token: getters.token,
+          ...payload
+        }
+      })
+
+      commit(FETCH_APP_RECEIVES, res.data.data)
+
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_SUPPLIER_APP_RECEIVES_DELIVERED]: async ({ getters, commit }, payload) => {
+    try {
+      const res = await apiCall.get('/supplier/app-receives/delivered', {
+        params: {
+          token: getters.token,
+          ...payload
+        }
+      })
+
+      commit(FETCH_APP_RECEIVES, res.data.data)
+
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_SUPPLIER_APP_RECEIVES_CONFIRMED]: async ({ getters, commit }, payload) => {
+    try {
+      const res = await apiCall.get('/supplier/app-receives/confirmed', {
+        params: {
+          token: getters.token,
+          ...payload
+        }
+      })
+
+      commit(FETCH_APP_RECEIVES, res.data.data)
+
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  },
+  [SET_SEPPLIER_APP_RECEIVE_IN_THE_WAY]: async ({ getters }, id) => {
+    try {
+      await apiCall.put(`/supplier/app-receives/${id}/in-the-way`, {}, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
+  [SET_SEPPLIER_APP_RECEIVE_DELIVERED]: async ({ getters }, id) => {
+    try {
+      await apiCall.put(`/supplier/app-receives/${id}/delivered`, {}, {
         params: {
           token: getters.token
         }

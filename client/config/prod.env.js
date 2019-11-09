@@ -1,4 +1,5 @@
 'use strict'
 module.exports = {
-  NODE_ENV: '"production-2"'
+  NODE_ENV: '"production"',
+  HOSTNAME: '"/"'
 }

@@ -23,6 +23,10 @@ app.use('/api/v1', (req, res, next) => {
   next(error)
 })
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
+})
+
 app.use((error, req, res, next) => {
   res.status(error.status || 500).json({
     ok: false,

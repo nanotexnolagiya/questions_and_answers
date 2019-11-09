@@ -11,9 +11,13 @@
             <li class="nav-item dropdown" v-if="role === 'supplier'">
               <a href="#" class="nav-link dropdown-toggle" @click.prevent="dropdown">Доставка</a>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="#">Нужно доставить</a>
-                <a class="dropdown-item" href="#">Доставляемые</a>
-                <a class="dropdown-item" href="#">Доставленные</a>
+                <a 
+                  class="dropdown-item" 
+                  href="#" 
+                  v-for="supplierNav in supplierNavs"
+                  :key="supplierNav.status" 
+                  @click.prevent="supplierActions(supplierNav.status)"
+                  v-text="supplierNav.name"></a>
               </div>
             </li>
             <li class="nav-item" v-for="nav in navs" :key="nav">
@@ -30,7 +34,7 @@
             <th scope="col">#</th>
             <th scope="col">Категория</th>
             <th scope="col">Свойства</th>
-            <th scope="col">Доставшик</th>
+            <th scope="col">{{ supplierStatus ? 'Пользователь' : 'Доставшик' }}</th>
             <th scope="col">Вещь</th>
             <th scope="col">Статус</th>
             <th scope="col">Действии</th>
@@ -41,15 +45,24 @@
             <td v-text="appReceive.id"></td>
             <td v-text="appReceive.Category ? appReceive.Category.name : 'Неизвестно'"></td>
             <td v-html="appReceive.Properties.length > 0 ? propertiesToString(appReceive.Properties) : 'Пусто'"></td>
-            <td v-text="appReceive.ApplicationReceiveSupplier ? appReceive.ApplicationReceiveSupplier.name : 'Неизвестно'"></td>
+            <td 
+              v-if="!supplierStatus"
+              v-text="appReceive.ApplicationReceiveSupplier ? appReceive.ApplicationReceiveSupplier.name : 'Неизвестно'"></td>
+            <td
+              v-else
+              v-text="appReceive.ApplicationReceiveUser ? appReceive.ApplicationReceiveUser.name : 'Неизвестно'"
+              ></td>
             <td v-text="appReceive.Thing ? appReceive.Thing.id : 'Не найдено'"></td>
             <td v-text="appReceive.Status.name"></td>
             <td>
               <div class="d-flex">
-                <router-link :to="`/app-receives/${appReceive.id}`">
-                  <i class="fas fa-edit text-warning" ></i>
-                </router-link>
-                <a :href="`#/${appReceive.id}`" @click.prevent="remove(appReceive.id)">
+                <a 
+                  :href="`#/${appReceive.id}`" 
+                  @click.prevent="confirm(appReceive)" 
+                  v-if="supplierStatus === 'confirmed' || supplierStatus === 'in_the_way'">
+                  <i class="fas fa-check text-success">Conf</i>
+                </a>
+                <a :href="`#/${appReceive.id}`" @click.prevent="remove(appReceive.id)" v-if="!supplierStatus">
                   <i class="fas fa-trash text-danger"></i>
                 </a>
               </div>
@@ -98,7 +111,15 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { FETCH_ACCOUNT_APP_RECEIVES, REMOVE_ACCOUNT_APP_RECEIVE } from 'actions/appReceive'
+import {
+  FETCH_ACCOUNT_APP_RECEIVES,
+  REMOVE_ACCOUNT_APP_RECEIVE,
+  FETCH_SUPPLIER_APP_RECEIVES_CONFIRMED,
+  SET_SEPPLIER_APP_RECEIVE_IN_THE_WAY,
+  SET_SEPPLIER_APP_RECEIVE_DELIVERED,
+  FETCH_SUPPLIER_APP_RECEIVES,
+  FETCH_SUPPLIER_APP_RECEIVES_DELIVERED
+} from 'actions/appReceive'
 import { FETCH_STATUSES } from 'actions/statuses'
 import { LOADING } from 'actions/common'
 export default {
@@ -117,7 +138,8 @@ export default {
         { name: 'Нужно доставить', status: 'confirmed' },
         { name: 'Доставляемые', status: 'in_the_way' },
         { name: 'Доставленные', status: 'delivered' }
-      ]
+      ],
+      supplierStatus: null
     }
   },
   computed: {
@@ -148,9 +170,10 @@ export default {
       let elementDisplay = e.target.nextElementSibling.style.display.length > 0 ? e.target.nextElementSibling.style.display : 'none'
       e.target.nextElementSibling.style.display = elementDisplay === 'none' ? 'block' : 'none'
     },
-    async fetch (params) {
+    async fetch (params, action) {
       const status = await this.$store.getters.statusByCode('cancelled')
-      const data = await this.$store.dispatch(FETCH_ACCOUNT_APP_RECEIVES, {
+      if (!action) action = FETCH_ACCOUNT_APP_RECEIVES
+      const data = await this.$store.dispatch(action, {
         statusId: `not:${status.id}`,
         page: this.page,
         limit: this.limit,
@@ -197,9 +220,32 @@ export default {
       await this.$store.dispatch(LOADING, false)
     },
     async supplierActions (code) {
+      this.page = 1
+      this.supplierStatus = code
       switch (code) {
         case 'confirmed':
-          // this.$store.dispatch();
+          await this.fetch({}, FETCH_SUPPLIER_APP_RECEIVES_CONFIRMED)
+          break
+        case 'in_the_way':
+          await this.fetch({}, FETCH_SUPPLIER_APP_RECEIVES)
+          break
+        case 'delivered':
+          await this.fetch({}, FETCH_SUPPLIER_APP_RECEIVES_DELIVERED)
+          break
+        default:
+          break
+      }
+    },
+    async confirm (appReceive) {
+      this.page = 1
+      switch (this.supplierStatus) {
+        case 'confirmed':
+          await this.$store.dispatch(SET_SEPPLIER_APP_RECEIVE_IN_THE_WAY, appReceive.id)
+          await this.fetch({}, FETCH_SUPPLIER_APP_RECEIVES_CONFIRMED)
+          break
+        case 'in_the_way':
+          await this.$store.dispatch(SET_SEPPLIER_APP_RECEIVE_DELIVERED, appReceive.id)
+          await this.fetch({}, FETCH_SUPPLIER_APP_RECEIVES)
           break
         default:
           break

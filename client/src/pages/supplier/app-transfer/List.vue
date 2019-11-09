@@ -8,6 +8,18 @@
       <div class="col-sm-9">
         <div class="d-flex justify-content-end">
           <ul class="nav action-nav">
+            <li class="nav-item dropdown" v-if="role === 'supplier'">
+              <a href="#" class="nav-link dropdown-toggle" @click.prevent="dropdown">Доставка</a>
+              <div class="dropdown-menu">
+                <a 
+                  class="dropdown-item" 
+                  href="#" 
+                  v-for="supplierNav in supplierNavs"
+                  :key="supplierNav.status" 
+                  @click.prevent="supplierActions(supplierNav.status)"
+                  v-text="supplierNav.name"></a>
+              </div>
+            </li>
             <li class="nav-item" v-for="nav in navs" :key="nav">
               <a class="nav-link" href="#" @click.prevent="getByStatus(nav.status)" v-text="nav.name"></a>
             </li>
@@ -22,7 +34,7 @@
             <th scope="col">#</th>
             <th scope="col">Картина</th>
             <th scope="col">Подробно</th>
-            <th scope="col">Доставшик</th>
+            <th scope="col">{{ supplierStatus ? 'Пользователь' : 'Доставшик' }}</th>
             <th scope="col">Статус</th>
             <th scope="col">Действии</th>
           </tr>
@@ -34,14 +46,26 @@
               <img v-if="appTransfer.Uploads && appTransfer.Uploads.length > 0" :src="`http://localhost:3330${appTransfer.Uploads[0].path}`" alt="">
             </td>
             <td v-text="appTransfer.text"></td>
-            <td v-text="appTransfer.ApplicationTransferSupplier ? appTransfer.ApplicationTransferSupplier.name : 'Неизвестно'"></td>
+            <td 
+              v-if="!supplierStatus"
+              v-text="appTransfer.ApplicationTransferSupplier ? appTransfer.ApplicationTransferSupplier.name : 'Неизвестно'"></td>
+            <td
+              v-else
+              v-text="appTransfer.ApplicationTransferUser ? appTransfer.ApplicationTransferUser.name : 'Неизвестно'"
+              ></td>
             <td v-text="appTransfer.Status.name"></td>
             <td>
               <div class="d-flex">
-                <router-link :to="`/app-transfers/${appTransfer.id}`">
-                  <i class="fas fa-edit text-warning" ></i>
-                </router-link>
-                <a :href="`#/${appTransfer.id}`" @click.prevent="remove(appTransfer.id)">
+                <a 
+                  :href="`#/${appTransfer.id}`" 
+                  @click.prevent="confirm(appTransfer)" 
+                  v-if="supplierStatus === 'confirmed' || supplierStatus === 'in_the_way'">
+                  <i class="fas fa-check text-success"></i>
+                </a>
+                <a 
+                  :href="`#/${appTransfer.id}`" 
+                  @click.prevent="remove(appTransfer.id)" 
+                  v-if="!supplierStatus">
                   <i class="fas fa-trash text-danger"></i>
                 </a>
               </div>
@@ -90,7 +114,15 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { FETCH_ACCOUNT_APP_TRANSFERS, REMOVE_ACCOUNT_APP_TRANSFER } from 'actions/appTransfer'
+import {
+  FETCH_ACCOUNT_APP_TRANSFERS,
+  REMOVE_ACCOUNT_APP_TRANSFER,
+  FETCH_SUPPLIER_APP_TRANSFERS_CONFIRMED,
+  SET_SEPPLIER_APP_TRANSFER_IN_THE_WAY,
+  SET_SEPPLIER_APP_TRANSFER_DELIVERED,
+  FETCH_SUPPLIER_APP_TRANSFERS,
+  FETCH_SUPPLIER_APP_TRANSFERS_DELIVERED
+} from 'actions/appTransfer'
 import { FETCH_STATUSES } from 'actions/statuses'
 import { LOADING } from 'actions/common'
 export default {
@@ -104,11 +136,17 @@ export default {
         { name: 'Ожидает', status: 'await' },
         { name: 'Подтверждено', status: 'confirmed' },
         { name: 'В пути', status: 'in_the_way' }
-      ]
+      ],
+      supplierNavs: [
+        { name: 'Нужно доставить', status: 'confirmed' },
+        { name: 'Доставляемые', status: 'in_the_way' },
+        { name: 'Доставленные', status: 'delivered' }
+      ],
+      supplierStatus: null
     }
   },
   computed: {
-    ...mapGetters(['appTransfers', 'statuses']),
+    ...mapGetters(['appTransfers', 'statuses', 'role']),
   },
   watch: {
     async page (newValue) {
@@ -131,10 +169,11 @@ export default {
     setPage (page) {
       this.page = page
     },
-    async fetch (params) {
+    async fetch (params, action) {
       const status = await this.$store.getters.statusByCode('cancelled')
-      const data = await this.$store.dispatch(FETCH_ACCOUNT_APP_TRANSFERS, {
-        statusId: `not:${status.id}`,
+      if (!action) action = FETCH_ACCOUNT_APP_TRANSFERS
+      const data = await this.$store.dispatch(action, {
+        statusId: !this.supplierStatus ? `not:${status.id}` : null,
         page: this.page,
         limit: this.limit,
         ...params
@@ -149,12 +188,45 @@ export default {
     },
     async getByStatus (statusCode) {
       this.page = 1
+      this.supplierStatus = null
       await this.$store.dispatch(LOADING, true)
       const status = await this.$store.getters.statusByCode(statusCode)
       await this.fetch({
         statusId: status.id
       })
       await this.$store.dispatch(LOADING, false)
+    },
+    async supplierActions (code) {
+      this.page = 1
+      this.supplierStatus = code
+      switch (code) {
+        case 'confirmed':
+          await this.fetch({}, FETCH_SUPPLIER_APP_TRANSFERS_CONFIRMED)
+          break
+        case 'in_the_way':
+          await this.fetch({}, FETCH_SUPPLIER_APP_TRANSFERS)
+          break
+        case 'delivered':
+          await this.fetch({}, FETCH_SUPPLIER_APP_TRANSFERS_DELIVERED)
+          break
+        default:
+          break
+      }
+    },
+    async confirm (appTransfer) {
+      this.page = 1
+      switch (this.supplierStatus) {
+        case 'confirmed':
+          await this.$store.dispatch(SET_SEPPLIER_APP_TRANSFER_IN_THE_WAY, appTransfer.id)
+          await this.fetch({}, FETCH_SUPPLIER_APP_TRANSFERS_CONFIRMED)
+          break
+        case 'in_the_way':
+          await this.$store.dispatch(SET_SEPPLIER_APP_TRANSFER_DELIVERED, appTransfer.id)
+          await this.fetch({}, FETCH_SUPPLIER_APP_TRANSFERS)
+          break
+        default:
+          break
+      }
     }
   },
   async created () {

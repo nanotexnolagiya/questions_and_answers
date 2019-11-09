@@ -12,6 +12,11 @@ import {
   ADD_ACCOUNT_APP_TRANSFER,
   UPDATE_ACCOUNT_APP_TRANSFER,
   REMOVE_ACCOUNT_APP_TRANSFER,
+  FETCH_SUPPLIER_APP_TRANSFERS,
+  FETCH_SUPPLIER_APP_TRANSFERS_CONFIRMED,
+  FETCH_SUPPLIER_APP_TRANSFERS_DELIVERED,
+  SET_SEPPLIER_APP_TRANSFER_IN_THE_WAY,
+  SET_SEPPLIER_APP_TRANSFER_DELIVERED
 } from '../actions/appTransfer'
 
 const state = {
@@ -166,7 +171,77 @@ const actions = {
     } catch (error) {
       throw error
     }
-  }
+  },
+  [FETCH_SUPPLIER_APP_TRANSFERS]: async ({ getters, commit }, payload) => {
+    try {
+      const res = await apiCall.get('/supplier/app-transfers', {
+        params: {
+          token: getters.token,
+          ...payload
+        }
+      })
+
+      commit(FETCH_APP_TRANSFERS, res.data.data)
+
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_SUPPLIER_APP_TRANSFERS_DELIVERED]: async ({ getters, commit }, payload) => {
+    try {
+      const res = await apiCall.get('/supplier/app-transfers/delivered', {
+        params: {
+          token: getters.token,
+          ...payload
+        }
+      })
+
+      commit(FETCH_APP_TRANSFERS, res.data.data)
+
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  },
+  [FETCH_SUPPLIER_APP_TRANSFERS_CONFIRMED]: async ({ getters, commit }, payload) => {
+    try {
+      const res = await apiCall.get('/supplier/app-transfers/confirmed', {
+        params: {
+          token: getters.token,
+          ...payload
+        }
+      })
+
+      commit(FETCH_APP_TRANSFERS, res.data.data)
+
+      return res.data
+    } catch (error) {
+      throw error
+    }
+  },
+  [SET_SEPPLIER_APP_TRANSFER_IN_THE_WAY]: async ({ getters }, id) => {
+    try {
+      await apiCall.put(`/supplier/app-transfers/${id}/in-the-way`, {}, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
+  [SET_SEPPLIER_APP_TRANSFER_DELIVERED]: async ({ getters }, id) => {
+    try {
+      await apiCall.put(`/supplier/app-transfers/${id}/delivered`, {}, {
+        params: {
+          token: getters.token
+        }
+      })
+    } catch (error) {
+      throw error
+    }
+  },
 }
 
 const mutations = {

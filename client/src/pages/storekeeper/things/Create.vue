@@ -45,16 +45,6 @@
             v-model="propertyValues[property.id]"
             />
         </div>
-        <div class="form-group">
-          <select class="form-control" v-model="selectedStatus">
-            <option value="-1" disabled v-if="!updatedPage"> -- Выбрать Статус -- </option>
-            <option 
-              v-for="status in statuses" 
-              :key="status.id" 
-              :value="status.id"
-            >{{ status.name }}</option>
-          </select>
-        </div>
         <button type="submit" class="btn btn-success">{{ updatedPage ? 'Обновить' : 'Сохранить' }}</button>
       </form>
     </div>
@@ -65,7 +55,6 @@
 import { mapGetters } from 'vuex'
 import { FETCH_CATEGORIES, FETCH_CATEGORY_PROPERTIES } from 'actions/categories'
 import { ADD_THING, UPDATE_THING, FETCH_THING_BY_ID } from 'actions/things'
-import { FETCH_STATUSES } from 'actions/statuses'
 import { LOADING } from 'actions/common'
 
 export default {
@@ -73,19 +62,18 @@ export default {
     return {
       updatedPage: false,
       errors: [],
-      selectedStatus: -1,
       categoriesTree: [],
       propertyValues: {},
       category: null
     }
   },
   computed: {
-    ...mapGetters(['categories', 'categoryProperties', 'statuses', 'thing'])
+    ...mapGetters(['categories', 'categoryProperties', 'thing'])
   },
   methods: {
     async save () {
       await this.$store.dispatch(LOADING, true)
-      const { category, propertyValues, selectedStatus } = this
+      const { category, propertyValues } = this
       this.errors = []
       const propertyIds = Object.keys(propertyValues)
       const properties = []
@@ -103,7 +91,6 @@ export default {
         const thing = {
           properties,
           category_id: category,
-          statusId: selectedStatus !== -1 ? selectedStatus : null
         }
         if (this.updatedPage) {
           await this.$store.dispatch(UPDATE_THING, { id: this.thing.id, ...thing })
@@ -187,7 +174,6 @@ export default {
     const id = this.$route.params.id
     await this.$store.dispatch(LOADING, true)
     await this.$store.dispatch(FETCH_CATEGORIES)
-    await this.$store.dispatch(FETCH_STATUSES)
 
     if (id) {
       this.updatedPage = true
@@ -195,7 +181,6 @@ export default {
 
       if (this.thing) {
         this.category = this.thing.Category.id
-        this.selectedStatus = this.thing.Status.id
         await this.setCategoriesTree(this.thing.Category.parentId, this.category)
         await this.categoriesTree.reverse()
         for (const property of this.thing.Properties) {

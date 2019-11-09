@@ -29,7 +29,7 @@ router.use('/properties', isRole(['admin']), PropertyController)
 router.use('/users', UserController)
 router.use('/roles', isRole(['admin']), RoleController)
 router.use('/statuses', StatusController)
-router.use('/things', isRole(['admin']), ThingController)
+router.use('/things', isRole(['admin', 'storekeeper']), ThingController)
 router.use('/account', AccountController)
 router.use('/supplier', SupplierController)
 

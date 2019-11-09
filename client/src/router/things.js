@@ -1,22 +1,22 @@
-import { isAuth, isRole } from './middleware/rbac'
-import Things from '@/pages/admin/things/List'
-import ThingCreate from '@/pages/admin/things/Create'
+import { isAuth } from './middleware/rbac'
+import Things from '@/pages/things/List'
+import ThingCreate from '@/pages/things/Create'
 import multiguard from 'vue-router-multiguard'
 
 export default [
   {
     path: '/things',
     component: Things,
-    beforeEnter: multiguard([isAuth, isRole(['admin'])])
+    beforeEnter: multiguard([isAuth])
   },
   {
     path: '/things/create',
     component: ThingCreate,
-    beforeEnter: multiguard([isAuth, isRole(['admin'])])
+    beforeEnter: multiguard([isAuth])
   },
   {
     path: '/things/:id',
     component: ThingCreate,
-    beforeEnter: multiguard([isAuth, isRole(['admin'])])
+    beforeEnter: multiguard([isAuth])
   }
 ]
