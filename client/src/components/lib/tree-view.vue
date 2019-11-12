@@ -54,6 +54,7 @@ export default {
       await this.$store.dispatch(LOADING, true)
       await this.$store.dispatch(REMOVE_CATEGORY, id)
       await this.$store.dispatch(FETCH_CATEGORIES_TREE)
+      await this.$store.dispatch(LOADING, false)
     }
   }
 }
