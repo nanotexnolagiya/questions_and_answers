@@ -1,42 +1,42 @@
 <template>
   <div class="d-flex justify-content-center align-items-center flex-column full-height">
     <form class="center-form" @submit.prevent="signup">
-      <h3 class="text-center mb-3">Sign Up</h3>
+      <h3 class="text-center mb-3">Регистрация</h3>
       <p v-if="errors.length" class="mb-3 alert alert-danger">
         <ul>
           <li v-for="error in errors" :key="error">{{ error }}</li>
         </ul>
       </p>
       <div class="form-group">
-        <input type="text" class="form-control" placeholder="Full Name" v-model="name">
+        <input type="text" class="form-control" placeholder="Ф.И.О" v-model="name">
       </div>
       <div class="form-group">
         <div class="input-group mb-3">
           <div class="input-group-prepend">
             <span class="input-group-text" id="phone">+998</span>
           </div>
-          <input type="text" class="form-control" placeholder="Phone Number" aria-label="Phone Number" aria-describedby="phone" v-model="phone">
+          <input type="text" class="form-control" placeholder="Телефон" aria-label="Phone Number" aria-describedby="phone" v-model="phone">
         </div>
       </div>
       <div class="form-group">
-        <input type="password" class="form-control" placeholder="Password" v-model="password">
+        <input type="password" class="form-control" placeholder="Пароль" v-model="password">
       </div>
       <div class="form-group">
-        <input type="password" class="form-control" placeholder="Confirm Password" v-model="cpassword">
+        <input type="password" class="form-control" placeholder="Подтвердите пароль" v-model="cpassword">
       </div>
       <div class="form-group form-check">
         <input type="checkbox" class="form-check-input" id="exampleCheck1" v-model="privacy">
-        <label class="form-check-label" for="exampleCheck1">Privacy Policy</label>
+        <label class="form-check-label" for="exampleCheck1">Политика конфиденциальности</label>
       </div>
       <div class="form-group text-right">
 
         <router-link to="/signin">
-          Sign In
+          Войти
           <span class="fas fa-long-arrow-alt-right"></span>
         </router-link>
       </div>
       <button type="submit" class="btn btn-success" :disabled="!privacy">
-        Sign Up
+        Зарегистрироваться
       </button>
     </form>
   </div>
@@ -58,7 +58,7 @@ export default {
       privacy: false,
       appId: '1945009795579340',
       fbAppEventsEnabled: false,
-      redirect: 'localhost:8080/signup',
+      redirect: `${window.location.host}/signup`,
       state: 'csrf_token',
       version: 'v1.0',
       loginType: 'PHONE',

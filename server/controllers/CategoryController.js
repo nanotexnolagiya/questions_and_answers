@@ -45,7 +45,7 @@ const tree = async (req, res, next) => {
 const add = async (req, res, next) => {
   const { name, parent = 0 } = req.body;
   try {
-    if (!name) throw new ResponseException("Name not found", 400);
+    if (!name) throw new ResponseException("Название не найдена", 400);
 
     await Categories.create(
       {
@@ -73,7 +73,7 @@ const update = async (req, res, next) => {
       }
     });
 
-    if (!category) throw new ResponseException("Category not found", 400);
+    if (!category) throw new ResponseException("Категория не найдена", 400);
 
     if (name) category.name = name;
     if (parent) category.parentId = parent;
@@ -119,7 +119,7 @@ const properties = async (req, res, next) => {
       ]
     });
 
-    if (!category) new ResponseException('category not found', 400);
+    if (!category) new ResponseException('Категория не найдена', 400);
 
     res.status(200).json({
       ok: true,

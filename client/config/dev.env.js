@@ -4,5 +4,5 @@ const prodEnv = require('./prod.env')
 
 module.exports = merge(prodEnv, {
   NODE_ENV: '"development"',
-  HOSTNAME: '"http://localhost:3330"'
+  HOSTNAME: '"${process.env.HOSTNAME}"'
 })

@@ -66,7 +66,7 @@ const single = async (req, res, next) => {
       ]
     });
 
-    if (!data) throw new ResponseException("Thing not found", 404);
+    if (!data) throw new ResponseException("Вещь не найдена", 404);
 
     res.status(200).json({
       ok: true,
@@ -106,9 +106,9 @@ const add = async (req, res, next) => {
       }
     });
 
-    if (!status) throw new ResponseException("Status not found", 400);
-    if (!category_id) throw new ResponseException("Category not found", 400);
-    if (!properties && properties.length === 0) throw new ResponseException("Properties not found", 400);
+    if (!status) throw new ResponseException("Статус не найдена", 400);
+    if (!category_id) throw new ResponseException("Категория не найдена", 400);
+    if (!properties && properties.length === 0) throw new ResponseException("Свойства не найдена", 400);
 
     const thing = await Things.create({
       categoryId: category_id,
@@ -171,7 +171,7 @@ const update = async (req, res, next) => {
       }
     });
 
-    if(!thing) throw new ResponseException('Thing not found'); 
+    if(!thing) throw new ResponseException('Вещь не найдена'); 
 
     if (category_id) {
       const category = await Categories.findOne({
@@ -179,7 +179,7 @@ const update = async (req, res, next) => {
           id: category_id
         }
       });
-      if (!category) throw new ResponseException('Category not found', 400);
+      if (!category) throw new ResponseException('Категория не найдена', 400);
       thing.categoryId = category.id
     }
 
@@ -190,7 +190,7 @@ const update = async (req, res, next) => {
         }
       });
   
-      if (!status) throw new ResponseException('Status not found', 400);
+      if (!status) throw new ResponseException('Статус не найдена', 400);
 
       thing.statusId = status.id
     }

@@ -32,7 +32,7 @@ const single = async (req, res, next) => {
       }
     });
 
-    if (!property) throw new ResponseException('Property not found', 400) 
+    if (!property) throw new ResponseException('Свойства не найдена', 400) 
 
     res.status(200).json({
       ok: true,
@@ -46,9 +46,9 @@ const single = async (req, res, next) => {
 const add = async (req, res, next) => {
   const { name, categoryIds, type } = req.body;
   try {
-    if (!name) throw new ResponseException("Name not found", 400);
-    if (!categoryIds || categoryIds.length === 0) throw new ResponseException("Category not found", 400);
-    if (!type) throw new ResponseException("Type not found", 400);
+    if (!name) throw new ResponseException("Название не найдена", 400);
+    if (!categoryIds || categoryIds.length === 0) throw new ResponseException("Категория не найдена", 400);
+    if (!type) throw new ResponseException("Тип не найдена", 400);
 
     const property = await Properties.create({ name, type });
 
@@ -59,7 +59,7 @@ const add = async (req, res, next) => {
         }
       })
   
-      if (!category) throw new Error("Property not found");
+      if (!category) throw new ResponseException("Категория не найдена", 400);
   
       await property.addCategories(category);
     }
@@ -83,7 +83,7 @@ const update = async (req, res, next) => {
       }
     });
 
-    if (!property) throw new ResponseException("Property not found", 400);
+    if (!property) throw new ResponseException("Свойства не найдена", 400);
 
     if (categoryIds || categoryIds.length > 0) {
       await CategoryProperties.destroy({
@@ -98,7 +98,7 @@ const update = async (req, res, next) => {
           }
         })
     
-        if (!category) throw new ResponseException("Category not found");
+        if (!category) throw new ResponseException("Категория не найдена");
     
         await property.addCategories(category);
       }

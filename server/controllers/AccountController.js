@@ -76,7 +76,7 @@ const singleReceives = async (req, res, next) => {
       ]
     });
 
-    if (!data) throw new ResponseException("Application Recieve not found", 400);
+    if (!data) throw new ResponseException("Заявка не найдена", 400);
 
     res.status(200).json({
       ok: true,
@@ -105,8 +105,8 @@ const addReceives = async (req, res, next) => {
       }
     });
 
-    if (!category_id) throw new ResponseException("Category not found", 400);
-    if (!properties && properties.length === 0) throw new ResponseException("Properties not found", 400);
+    if (!category_id) throw new ResponseException("Категория не найдена", 400);
+    if (!properties && properties.length === 0) throw new ResponseException("Свойства не найдена", 400);
 
     const appReceive = await ApplicationReceive.create({
       userId: req.userData.userId,
@@ -171,7 +171,7 @@ const updateReceives = async (req, res, next) => {
       }
     });
 
-    if(!appReceive) throw new ResponseException('Application not found'); 
+    if(!appReceive) throw new ResponseException('Заявка не найдена'); 
 
     const deliveredStatus = await Statuses.findOne({
       where: {
@@ -187,7 +187,7 @@ const updateReceives = async (req, res, next) => {
           id: category_id
         }
       });
-      if (!category) throw new ResponseException('Category not found', 400);
+      if (!category) throw new ResponseException('Категория не найдена', 400);
       appReceive.categoryId = category.id
     }
 
@@ -275,7 +275,7 @@ const removeReceives = async (req, res, next) => {
       }
     });
 
-    if (!data) throw new ResponseException('Application Receive not found');
+    if (!data) throw new ResponseException('Заявка не найдена');
 
     data.statusId = cancelledStatus.id;
     await data.save();
@@ -348,7 +348,7 @@ const singleTransfers = async (req, res, next) => {
       ]
     });
 
-    if (!data) throw new ResponseException("Application Transfer not found", 400);
+    if (!data) throw new ResponseException("Заявка не найдена", 400);
 
     res.status(200).json({
       ok: true,
@@ -369,7 +369,7 @@ const addTransfers = async (req, res, next) => {
       }
     });
 
-    if (!status) throw new ResponseException("Status not found");
+    if (!status) throw new ResponseException("Статус не найдена");
 
     const data = await ApplicationTransfer.create({
       userId: req.userData.userId,
@@ -410,7 +410,7 @@ const updateTransfers = async (req, res, next) => {
       }
     });
 
-    if(!data) throw new ResponseException('Application not found'); 
+    if(!data) throw new ResponseException('Заявка не найдена'); 
 
     const deliveredStatus = await Statuses.findOne({
       where: {
@@ -460,7 +460,7 @@ const removeTransfers = async (req, res, next) => {
       }
     });
 
-    if (!data) throw new ResponseException('Application Transfer not found', 400)
+    if (!data) throw new ResponseException('Заявка не найдена', 400)
 
     data.statusId = cancelledStatus.id
 

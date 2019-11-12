@@ -1,11 +1,11 @@
 <template>
   <pageLayout>
     <div class="content-actions mb-3 row">
-      <div class="col-sm-3">
+      <div class="col-md-3">
         <router-link to="/app-transfers/create" class="btn btn-success" tag="button">Добавить заявку</router-link>
       </div>
 
-      <div class="col-sm-9">
+      <div class="col-md-9">
         <div class="d-flex justify-content-end">
         <div class="form-group">
           <select class="form-control" v-model="filterStatus">
@@ -37,7 +37,7 @@
           <tr v-for="appTransfer in appTransfers" :key="appTransfer.id">
             <td v-text="appTransfer.id"></td>
             <td>
-              <img v-if="appTransfer.Uploads && appTransfer.Uploads.length > 0" :src="`http://localhost:3330${appTransfer.Uploads[0].path}`" alt="">
+              <img v-if="appTransfer.Uploads && appTransfer.Uploads.length > 0" :src="`${process.env.HOSTNAME}${appTransfer.Uploads[0].path}`" alt="">
             </td>
             <td v-text="appTransfer.text"></td>
             <td v-text="appTransfer.ApplicationTransferUser ? appTransfer.ApplicationTransferUser.name : 'Неизвестно'"></td>

@@ -1,11 +1,11 @@
 <template>
   <pageLayout>
     <div class="content-actions mb-3 row">
-      <div class="col-sm-3">
+      <div class="col-md-3">
         <router-link to="/app-transfers/create" class="btn btn-success" tag="button">Добавить заявку</router-link>
       </div>
 
-      <div class="col-sm-9">
+      <div class="col-md-9">
         <div class="d-flex justify-content-end">
           <ul class="nav action-nav">
             <li class="nav-item dropdown" v-if="role === 'supplier'">
@@ -16,7 +16,7 @@
                   href="#" 
                   v-for="supplierNav in supplierNavs"
                   :key="supplierNav.status" 
-                  @click.prevent="supplierActions(supplierNav.status)"
+                  @click.prevent="supplierActions($event, supplierNav.status)"
                   v-text="supplierNav.name"></a>
               </div>
             </li>
@@ -43,7 +43,7 @@
           <tr v-for="appTransfer in appTransfers" :key="appTransfer.id">
             <td v-text="appTransfer.id"></td>
             <td>
-              <img v-if="appTransfer.Uploads && appTransfer.Uploads.length > 0" :src="`http://localhost:3330${appTransfer.Uploads[0].path}`" alt="">
+              <img v-if="appTransfer.Uploads && appTransfer.Uploads.length > 0" :src="`${process.env.HOSTNAME}${appTransfer.Uploads[0].path}`" alt="">
             </td>
             <td v-text="appTransfer.text"></td>
             <td 
@@ -169,6 +169,10 @@ export default {
     setPage (page) {
       this.page = page
     },
+    dropdown (e) {
+      let elementDisplay = e.target.nextElementSibling.style.display.length > 0 ? e.target.nextElementSibling.style.display : 'none'
+      e.target.nextElementSibling.style.display = elementDisplay === 'none' ? 'flex' : 'none'
+    },
     async fetch (params, action) {
       const status = await this.$store.getters.statusByCode('cancelled')
       if (!action) action = FETCH_ACCOUNT_APP_TRANSFERS
@@ -196,7 +200,7 @@ export default {
       })
       await this.$store.dispatch(LOADING, false)
     },
-    async supplierActions (code) {
+    async supplierActions (e, code) {
       this.page = 1
       this.supplierStatus = code
       switch (code) {
@@ -212,6 +216,7 @@ export default {
         default:
           break
       }
+      e.target.parentElement.style.display = 'none'
     },
     async confirm (appTransfer) {
       this.page = 1

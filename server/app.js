@@ -18,8 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use('/api/v1', routes.api)
 
 app.use('/api/v1', (req, res, next) => {
-  const error = new Error('Not found')
-  error.status = 404
+  const error = new ResponseException('Страница не найдена', 404)
   next(error)
 })
 

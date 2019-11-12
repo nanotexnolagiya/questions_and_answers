@@ -31,7 +31,7 @@ const me = async (req, res, next) => {
         ]
       });
 
-      if(!user) new ResponseException('user not found', 400);
+      if(!user) new ResponseException('Пользовател не найдена', 400);
 
       res.status(200).json(user);
     }

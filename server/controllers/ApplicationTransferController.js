@@ -65,7 +65,7 @@ const single = async (req, res, next) => {
       ]
     });
 
-    if (!data) throw new ResponseException("Application Transfer not found", 400);
+    if (!data) throw new ResponseException("Заявка не найдена", 400);
 
     res.status(200).json({
       ok: true,
@@ -92,7 +92,7 @@ const add = async (req, res, next) => {
     }
     const status = await Statuses.findOne(statusStatement);
 
-    if (!status) throw new ResponseException("Status not found");
+    if (!status) throw new ResponseException("Статус не найдена");
 
     const data = await ApplicationTransfer.create({
       userId: req.userData.userId,
@@ -125,7 +125,7 @@ const update = async (req, res, next) => {
   const id = req.params.id;
 
   try {
-    if (!statusId) throw new ResponseException('Status not found');
+    if (!statusId) throw new ResponseException('Статус не найдена');
 
     const status = await Statuses.findOne({
       where: {
@@ -133,7 +133,7 @@ const update = async (req, res, next) => {
       }
     });
 
-    if (!status) throw new ResponseException("Status not found");
+    if (!status) throw new ResponseException("Статус не найдена");
 
     const data = await ApplicationTransfer.findOne({
       where: {

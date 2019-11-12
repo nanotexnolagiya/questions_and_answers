@@ -163,7 +163,7 @@ const setInTheWayAppReceive = async (req, res, next) => {
       }
     });
 
-    if (!data) throw new ResponseException("Application Recieve not found", 400);
+    if (!data) throw new ResponseException("Заявка не найдена", 400);
 
     const inTheWayStatus = await Statuses.findOne({
       where: {
@@ -194,7 +194,7 @@ const setDeliveredAppReceive = async (req, res, next) => {
       }
     });
 
-    if (!data) throw new ResponseException("Application Recieve not found", 400);
+    if (!data) throw new ResponseException("Заявка не найдена", 400);
 
     const deliveredStatus = await Statuses.findOne({
       where: {
@@ -315,7 +315,7 @@ const setInTheWayAppTransfer = async (req, res, next) => {
       }
     });
 
-    if (!data) throw new ResponseException("Application Transfer not found", 400);
+    if (!data) throw new ResponseException("Заявка не найдена", 400);
 
     const inTheWayStatus = await Statuses.findOne({
       where: {
@@ -346,7 +346,7 @@ const setDeliveredAppTransfer = async (req, res, next) => {
       }
     });
 
-    if (!data) throw new ResponseException("Application Transfer not found", 400);
+    if (!data) throw new ResponseException("Заявка не найдена", 400);
 
     const deliveredStatus = await Statuses.findOne({
       where: {

@@ -16,14 +16,11 @@ module.exports = async (req, res, next) => {
       }
     })
 
-    if(!user) throw new Error('Unauthorizated') 
+    if(!user) throw new ResponseException('Не авторизован', 401) 
 
     req.userData = decoded;
     next();
   } catch (error) {
-    res.status(401).json({
-      ok: false,
-      message: "Unauthorizated"
-    });
+    next(error);
   }
 };

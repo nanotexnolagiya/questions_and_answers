@@ -182,4 +182,40 @@ table tr td i {
     margin-left: -15rem;
   }
 }
+
+@media (max-width: 768px) {
+  #wrapper {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .content-actions > div {
+    margin-bottom: 20px;
+  }
+
+  .center-form {
+    width: calc(100% - 40px);
+  }
+
+  ul.action-nav li.nav-item {
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .dropdown-menu {
+    position: static;
+    flex-wrap: wrap;
+    padding-left: 0;
+    margin-bottom: 0;
+    border: none;
+  }
+
+  .dropdown-menu .dropdown-item {
+    border: 1px solid #28a645;
+    border-radius: 0.25rem;
+    margin-bottom: 5px;
+    color: #28a645;
+  }
+}
 </style>

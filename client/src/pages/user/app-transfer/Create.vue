@@ -1,7 +1,7 @@
 <template>
   <pageLayout>
     <div class="d-flex">
-      <form class="col-sm-4" enctype="multipart/form-data" @submit.prevent="save">
+      <form class="col-md-4" enctype="multipart/form-data" @submit.prevent="save">
         <p class="alert alert-danger" v-if="errors && errors.length > 0">
           <ul>
             <li v-for="err in errors" :key="err">{{ err }}</li>
@@ -21,7 +21,7 @@
             <img v-for="image in images" :key="image" :src="image" alt="">
           </div>
           <div class="uploads-results" v-else-if="appTransfer && appTransfer.Uploads.length > 0">
-            <img v-for="upload in appTransfer.Uploads" :src="`http://localhost:3330${upload.path}`" :key="upload.id" alt="">
+            <img v-for="upload in appTransfer.Uploads" :src="`${process.env.HOSTNAME}${upload.path}`" :key="upload.id" alt="">
           </div>
         </div>
         <button type="submit" class="btn btn-success">{{ updatePage ? 'Обновить' : 'Сохранить' }}</button>

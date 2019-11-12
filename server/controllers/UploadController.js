@@ -69,7 +69,7 @@ const add = async (req, res, next) => {
         data
       });
     } else {
-      throw new ResponseException('Files not upload', 400);
+      throw new ResponseException('Файлы не загружены', 400);
     }
   } catch (error) {
     next(error);

@@ -76,10 +76,10 @@ const signup = async (req, res, next) => {
           role: currRole.code
         })
       } else {
-        throw new ResponseException('User existing!', 400)
+        throw new ResponseException('Пользоватеь уже существует', 400)
       }
     } else {
-      throw new ResponseException('Phone not confirm', 400)
+      throw new ResponseException('Телефон не подтверждено', 400)
     }
   } catch (error) {
     next(error)
@@ -134,10 +134,10 @@ const signin = async (req, res, next) => {
           role: user.Role.code
         })
       } else {
-        throw new ResponseException('password failed', 400)
+        throw new ResponseException('Ошибка в авторизации', 400)
       }
     } else {
-      throw new ResponseException('user not found', 400)
+      throw new ResponseException('Ошибка в авторизации', 400)
     }
   } catch (error) {
     next(error)

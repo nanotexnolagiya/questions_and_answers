@@ -25,7 +25,7 @@ module.exports = multer({
     const ext = path.extname(file.originalname)
 
     if (ext !== '.jpg' && ext !== '.jpeg' && ext !== '.png' && ext !== '.gif') {
-      const error = new Error('Extention')
+      const error = new ResponseException('Не допустимое расширение', 400)
       error.code = 'EXTENTION'
       return cb(error)
     }

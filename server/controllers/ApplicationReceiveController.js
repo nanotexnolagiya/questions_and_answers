@@ -72,7 +72,7 @@ const single = async (req, res, next) => {
       ]
     });
 
-    if (!data) throw new ResponseException("Application Recieve not found", 400);
+    if (!data) throw new ResponseException("Заявка не найдена", 400);
 
     res.status(200).json({
       ok: true,
@@ -112,9 +112,9 @@ const add = async (req, res, next) => {
       }
     });
 
-    if (!status) throw new ResponseException("Status not found", 400);
-    if (!category_id) throw new ResponseException("Category not found", 400);
-    if (!properties && properties.length === 0) throw new ResponseException("Properties not found", 400);
+    if (!status) throw new ResponseException("Статус не найдена", 400);
+    if (!category_id) throw new ResponseException("Категория не найдена", 400);
+    if (!properties && properties.length === 0) throw new ResponseException("Свойства не найдена", 400);
 
     const appReceive = await ApplicationReceive.create({
       userId: req.userData.userId,
@@ -178,7 +178,7 @@ const update = async (req, res, next) => {
       }
     });
 
-    if(!appReceive) throw new ResponseException('Application not found'); 
+    if(!appReceive) throw new ResponseException('Заявка не найдена'); 
 
     if (category_id) {
       const category = await Categories.findOne({
@@ -186,7 +186,7 @@ const update = async (req, res, next) => {
           id: category_id
         }
       });
-      if (!category) throw new ResponseException('Category not found', 400);
+      if (!category) throw new ResponseException('Категория не найдена', 400);
       appReceive.categoryId = category.id
     }
 
@@ -197,7 +197,7 @@ const update = async (req, res, next) => {
         }
       });
   
-      if (!status) throw new ResponseException('Status not found', 400);
+      if (!status) throw new ResponseException('Статус не найдена', 400);
 
       appReceive.statusId = status.id
     }
@@ -209,7 +209,7 @@ const update = async (req, res, next) => {
         }
       });
 
-      if (!thing) throw new ResponseException('Thing not found', 400);
+      if (!thing) throw new ResponseException('Вещь не найдена', 400);
 
       appReceive.thingId = thing.id
     }
@@ -221,7 +221,7 @@ const update = async (req, res, next) => {
         }
       });
 
-      if (!supplier) throw new ResponseException('Supplier not found', 400);
+      if (!supplier) throw new ResponseException('Доставшик не найдена', 400);
 
       appReceive.supplierId = supplier.id
     }

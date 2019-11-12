@@ -1,11 +1,11 @@
 <template>
   <pageLayout>
     <div class="content-actions mb-3 row">
-      <div class="col-sm-3">
+      <div class="col-md-3">
         <router-link to="/app-receives/create" class="btn btn-success" tag="button">Добавить заявку</router-link>
       </div>
 
-      <div class="col-sm-9">
+      <div class="col-md-9">
         <div class="d-flex justify-content-end">
           <ul class="nav action-nav">
             <li class="nav-item dropdown" v-if="role === 'supplier'">
@@ -16,7 +16,7 @@
                   href="#" 
                   v-for="supplierNav in supplierNavs"
                   :key="supplierNav.status" 
-                  @click.prevent="supplierActions(supplierNav.status)"
+                  @click.prevent="supplierActions($event, supplierNav.status)"
                   v-text="supplierNav.name"></a>
               </div>
             </li>
@@ -168,7 +168,7 @@ export default {
     },
     dropdown (e) {
       let elementDisplay = e.target.nextElementSibling.style.display.length > 0 ? e.target.nextElementSibling.style.display : 'none'
-      e.target.nextElementSibling.style.display = elementDisplay === 'none' ? 'block' : 'none'
+      e.target.nextElementSibling.style.display = elementDisplay === 'none' ? 'flex' : 'none'
     },
     async fetch (params, action) {
       const status = await this.$store.getters.statusByCode('cancelled')
@@ -219,7 +219,7 @@ export default {
       })
       await this.$store.dispatch(LOADING, false)
     },
-    async supplierActions (code) {
+    async supplierActions (e, code) {
       this.page = 1
       this.supplierStatus = code
       switch (code) {
@@ -235,6 +235,7 @@ export default {
         default:
           break
       }
+      e.target.parentElement.style.display = 'none'
     },
     async confirm (appReceive) {
       this.page = 1

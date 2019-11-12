@@ -1,7 +1,7 @@
 <template>
   <pageLayout>
     <div class="d-flex">
-      <form class="col-sm-4" @submit.prevent="save">
+      <form class="col-md-4" @submit.prevent="save">
         <p class="alert alert-danger" v-if="errors && errors.length > 0">
           <ul>
             <li v-for="err in errors" :key="err">{{ err }}</li>

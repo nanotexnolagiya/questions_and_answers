@@ -1,5 +1,5 @@
 'use strict'
 module.exports = {
   NODE_ENV: '"production"',
-  HOSTNAME: '"/"'
+  HOSTNAME: '"https://open-hands.herokuapp.com"'
 }

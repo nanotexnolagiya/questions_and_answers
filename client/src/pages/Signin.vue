@@ -27,7 +27,7 @@
       </div>
       <div class="form-group form-check">
         <input type="checkbox" class="form-check-input" id="exampleCheck1" v-model="remember">
-        <label class="form-check-label" for="exampleCheck1">Remember Me</label>
+        <label class="form-check-label" for="exampleCheck1">Запомнить меня</label>
       </div>
       <div class="form-group text-right">
         <router-link to="/signup">

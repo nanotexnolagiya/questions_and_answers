@@ -22,6 +22,6 @@ module.exports = input => {
     return input;
   } catch (error) {
     console.log(error);
-    throw new Error(error.message);
+    throw new ResponseException(error.message, 500);
   }
 };

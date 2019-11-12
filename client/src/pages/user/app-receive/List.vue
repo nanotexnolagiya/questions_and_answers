@@ -1,11 +1,11 @@
 <template>
   <pageLayout>
     <div class="content-actions mb-3 row">
-      <div class="col-sm-3">
+      <div class="col-md-3">
         <router-link to="/app-receives/create" class="btn btn-success" tag="button">Добавить заявку</router-link>
       </div>
 
-      <div class="col-sm-9">
+      <div class="col-md-9">
         <div class="d-flex justify-content-end">
           <ul class="nav action-nav">
             <li class="nav-item" v-for="nav in navs" :key="nav">
