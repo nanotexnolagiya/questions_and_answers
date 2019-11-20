@@ -3,7 +3,6 @@ import App from './App'
 import router from './router'
 import store from './store'
 import './plugins/bootstrap-vue'
-import { VueEditor } from 'vue2-editor'
 import treeView from 'components/lib/tree-view'
 import loading from 'components/lib/loading'
 import pageLayout from 'components/lib/page-layout'
@@ -12,7 +11,6 @@ import { ERROR } from 'actions/common'
 
 Vue.config.productionTip = false
 
-Vue.component('vue-editor', VueEditor)
 Vue.component('tree-view', treeView)
 Vue.component('loading', loading)
 Vue.component('pageLayout', pageLayout)
@@ -31,15 +29,14 @@ Vue.config.errorHandler = function (err, vm, info) {
       store.dispatch(AUTH_LOGOUT)
       location.href = '/signin'
     }
-    console.error(err.response)
+    console.error(err.response.data.message)
   }
   store.dispatch(ERROR, true)
   console.error(err)
-  console.log(info)
+  console.info(info)
 }
 
 window.onerror = function (message, source, line, column, error) {
-  alert('error 1')
   console.log('Start on err')
   console.log('Message', message)
   console.log('Source', source)
