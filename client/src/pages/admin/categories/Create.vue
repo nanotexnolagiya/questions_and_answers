@@ -14,7 +14,7 @@
           <select class="form-control" v-model="selectedCategory">
             <option value="0" disabled v-if="!updatedPage"> -- Выбрать категорию -- </option>
             <option 
-              v-for="cat in categories" 
+              v-for="cat in getCategories" 
               :key="cat.id" 
               :value="cat.id"
             >{{ cat.name }}</option>
@@ -29,8 +29,9 @@
 <script>
 import validator from 'validator'
 import { mapGetters } from 'vuex'
-import { FETCH_CATEGORIES, ADD_CATEGORY, UPDATE_CATEGORY } from 'actions/categories'
+import { FETCH_CATEGORIES_TREE, ADD_CATEGORY, UPDATE_CATEGORY } from 'actions/categories'
 import { LOADING } from 'actions/common'
+import threeToFlat from 'utils/threeToFlat'
 
 export default {
   data () {
@@ -45,6 +46,10 @@ export default {
     ...mapGetters(['categories']),
     category () {
       return this.$store.getters.category(+this.$route.params.categoryId)
+    },
+
+    getCategories () {
+      return threeToFlat(this.categories)
     }
   },
   methods: {
@@ -79,7 +84,7 @@ export default {
   async created () {
     const categoryId = this.$route.params.categoryId
     await this.$store.dispatch(LOADING, true)
-    await this.$store.dispatch(FETCH_CATEGORIES)
+    await this.$store.dispatch(FETCH_CATEGORIES_TREE)
 
     if (categoryId) {
       this.updatedPage = true
@@ -89,6 +94,7 @@ export default {
       }
     }
     await this.$store.dispatch(LOADING, false)
+    console.log(this)
   }
 }
 </script>
