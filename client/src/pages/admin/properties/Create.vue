@@ -27,6 +27,7 @@
               v-for="cat in categories" 
               :key="cat.id" 
               :value="cat.id"
+              :disabled="cat.disabled"
             >{{ cat.name }}</option>
           </select>
         </div>
@@ -37,9 +38,10 @@
 </template>
 
 <script>
-import { FETCH_CATEGORIES } from 'actions/categories'
+import { FETCH_CATEGORIES_TREE } from 'actions/categories'
 import { ADD_PROPERTY, UPDATE_PROPERTY, FETCH_PROPERTIES } from 'actions/properties'
 import { LOADING } from 'actions/common'
+import threeToFlat from 'utils/threeToFlat'
 
 export default {
   data () {
@@ -59,7 +61,7 @@ export default {
   },
   computed: {
     categories () {
-      return this.notChildCategory(this.$store.getters.categories)
+      return threeToFlat(this.$store.getters.categories)
     },
     property () {
       return this.$store.getters.property(+this.$route.params.id)
@@ -106,7 +108,7 @@ export default {
     const id = this.$route.params.id
 
     await this.$store.dispatch(LOADING, true)
-    await this.$store.dispatch(FETCH_CATEGORIES)
+    await this.$store.dispatch(FETCH_CATEGORIES_TREE)
     if (id) {
       await this.$store.dispatch(FETCH_PROPERTIES)
       this.updatedPage = true
