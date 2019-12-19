@@ -1,490 +1,566 @@
-const express = require('express')
-const router = express.Router()
-const {
-  ApplicationReceive,
-  Categories,
-  Properties,
-  ApplicationTransfer,
-  Uploads,
-  Users,
-  Statuses,
-  Things,
-  ApplicationReceivePropertyValues
-} = require("../models");
+const express = require('express');
+const router = express.Router();
+const { Users, Questions, Categories } = require('../models');
+const bcrypt = require('bcryptjs')
 const filter = require('../utils/filter');
 const order = require('../utils/order');
-const arrayEqual = require('../utils/arrayEqual');
+const isRole = require('../routes/middleware/isRole');
+const roles = require('../enums/roles');
+const statuses = require('../enums/status');
+const config = require('../config');
+const latToCyr = require('../utils/latinToCyrilic');
 
-
-const allReceives = async (req, res, next) => {
+/**
+ * @api {get} /account/questions
+ * @apiGroup Account
+ * @apiName GetAccountQuestions
+ * @apiPermission all
+ * @apiParam {Number} limit  Limit
+ * @apiParam {Number} page  Page number
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object[]} data  Questions List
+ * @apiSuccess {Number} total_count  Total count
+ */
+const allQuestions = async (req, res, next) => {
   const { limit, page = 1, sorts } = req.query;
 
   const columnsFilter = [
-    'statusId'
-  ];
-  
-  try {
-    let whereStatement = filter(req.query, columnsFilter);
-    whereStatement.userId = req.userData.userId
-    const orderStatement = order(sorts);
-    
-    const count = await ApplicationReceive.count({
-      where: {
-        userId: whereStatement.userId
-      }
-    });
-    const pages = limit ? Math.ceil(count / limit) : 0;
-    const offset = limit ? limit * (page - 1) : null;
-
-    const data = await ApplicationReceive.findAll({
-      where: whereStatement,
-      order: orderStatement,
-      limit,
-      offset,
-      include: [
-        { model: Statuses },
-        { model: Categories },
-        { model: Properties },
-        { model: Things },
-        { model: Users, as: "ApplicationReceiveSupplier" },
-      ]
-    });
-
-    res.status(200).json({
-      ok: true,
-      data,
-      pageCount: pages
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const singleReceives = async (req, res, next) => {
-  const id = req.params.id;
-  try {
-    const data = await ApplicationReceive.findOne({
-      where: {
-        id,
-        userId: req.userData.userId
-      },
-      include: [
-        { model: Statuses },
-        { model: Categories },
-        { model: Properties },
-        { model: Users, as: "ApplicationReceiveSupplier" },
-      ]
-    });
-
-    if (!data) throw new ResponseException("Заявка не найдена", 400);
-
-    res.status(200).json({
-      ok: true,
-      data
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const addReceives = async (req, res, next) => {
-  const { properties, category_id } = req.body;
-
-  try {
-    let hasThing = false;
-    
-    const awaitStatus = await Statuses.findOne({
-      where: {
-        code: "await"
-      }
-    });
-
-    const foundMatchStatus = await Statuses.findOne({
-      where: {
-        code: 'found_match'
-      }
-    });
-
-    if (!category_id) throw new ResponseException("Категория не найдена", 400);
-    if (!properties && properties.length === 0) throw new ResponseException("Свойства не найдена", 400);
-
-    const appReceive = await ApplicationReceive.create({
-      userId: req.userData.userId,
-      categoryId: category_id,
-      statusId: awaitStatus.id
-    });
-
-    await ApplicationReceivePropertyValues.bulkCreate(properties.map(property => ({ applicationReceiveId: appReceive.id, ...property })));
-
-    const things = await Things.findAll({
-      where: {
-        statusId: awaitStatus.id,
-        categoryId: category_id
-      },
-      include: [
-        {
-          model: Properties,
-          where: {
-            id: {
-              $in: properties.map(property => property.propertyId)
-            }
-          }
-        }
-      ]
-    });
-
-    for (const thing of things) {
-      const thingValues = thing.dataValues.Properties.map(propertyValues => propertyValues.ThingPropertyValues.value)
-      const appValues = properties.map(property => property.value)
-
-      if (arrayEqual(thingValues, appValues)) {
-        hasThing = thing
-      }
-    }
-
-    if (hasThing) {
-      appReceive.thingId = hasThing.id
-      appReceive.statusId = foundMatchStatus.id
-      await appReceive.save();
-
-      hasThing.statusId = foundMatchStatus.id
-      await hasThing.save();
-    }
-
-    res.status(201).json({
-      ok: true
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const updateReceives = async (req, res, next) => {
-  const { properties, category_id, delivered } = req.body;
-  const id = req.params.id;
-
-  try {
-    const appReceive = await ApplicationReceive.findOne({
-      where: {
-        id,
-        userId: req.userData.userId
-      }
-    });
-
-    if(!appReceive) throw new ResponseException('Заявка не найдена'); 
-
-    const deliveredStatus = await Statuses.findOne({
-      where: {
-        code: 'delivered'
-      }
-    });
-
-    if (delivered) data.statusId = deliveredStatus.id 
-
-    if (category_id) {
-      const category = await Categories.findOne({
-        where: {
-          id: category_id
-        }
-      });
-      if (!category) throw new ResponseException('Категория не найдена', 400);
-      appReceive.categoryId = category.id
-    }
-
-    if (properties && properties.length > 0) {
-      let hasThing = false;
-      const awaitStatus = await Statuses.findOne({
-        where: {
-          code: "await"
-        }
-      });
-
-      const foundMatchStatus = await Statuses.findOne({
-        where: {
-          code: 'found_match'
-        }
-      });
-
-      await ApplicationReceivePropertyValues.destroy({
-        where: {
-          applicationReceiveId: appReceive.id
-        }
-      });
-      await ApplicationReceivePropertyValues.bulkCreate(properties.map(property => ({ applicationReceiveId: appReceive.id, ...property })));
-
-      const things = await Things.findAll({
-        where: {
-          statusId: awaitStatus.id,
-          categoryId: category_id
-        },
-        include: [
-          {
-            model: Properties,
-            where: {
-              id: {
-                $in: properties.map(property => property.propertyId)
-              }
-            }
-          }
-        ]
-      });
-  
-      for (const thing of things) {
-        const thingValues = thing.dataValues.Properties.map(propertyValues => propertyValues.ThingPropertyValues.value)
-        const appValues = properties.map(property => property.value)
-  
-        if (arrayEqual(thingValues, appValues)) {
-          hasThing = thing
-        }
-      }
-  
-      if (hasThing) {
-        appReceive.thingId = hasThing.id
-        appReceive.statusId = foundMatchStatus.id
-        await appReceive.save();
-  
-        hasThing.statusId = foundMatchStatus.id
-        await hasThing.save();
-      }
-    }
-
-    await appReceive.save();
-
-    res.status(202).json({
-      ok: true
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const removeReceives = async (req, res, next) => {
-  const id = req.params.id;
-
-  try {
-    const cancelledStatus = await Statuses.findOne({
-      where: {
-        code: 'cancelled'
-      }
-    });
-
-    const data = await ApplicationReceive.findOne({
-      where: {
-        id,
-        userId: req.userData.userId
-      }
-    });
-
-    if (!data) throw new ResponseException('Заявка не найдена');
-
-    data.statusId = cancelledStatus.id;
-    await data.save();
-
-    res.status(202).json({
-      ok: true
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// ---------------------------------------------------------
-
-const allTransfers = async (req, res, next) => {
-  const { limit, page = 1, sorts } = req.query;
-
-  const columnsFilter = [
-    'statusId'
+    'id',
+    'title',
+    'question',
+    'answer',
+    'status',
+    'is_private',
+    'category_id',
+    'answered_user_id'
   ];
   
   try {
     const whereStatement = filter(req.query, columnsFilter);
+    whereStatement.user_id = req.user.user_id;
     const orderStatement = order(sorts);
 
-    whereStatement.userId = req.userData.userId
-    
-    const count = await ApplicationTransfer.count({
-      where: {
-        userId: whereStatement.userId
-      }
+    const count = await Questions.count({
+      where: whereStatement
     });
-    const pages = limit ? Math.ceil(count / limit) : 0;
     const offset = limit ? limit * (page - 1) : null;
 
-    const data = await ApplicationTransfer.findAll({
+    const questions = await Questions.findAll({
       where: whereStatement,
       order: orderStatement,
       limit,
       offset,
       include: [
-        { model: Uploads },
-        { model: Users, as: "ApplicationTransferSupplier" },
-        { model: Statuses }
+        { as: 'category', model: Categories, attributes: ['name'] },
+        { as: 'answered_user', model: Users, attributes: ['username'] }
       ]
     });
 
     res.status(200).json({
       ok: true,
-      data,
-      pageCount: pages
+      data: questions,
+      total_count: count
     });
   } catch (error) {
-    next(error)
+    next(error);
   }
-};
+}
 
-const singleTransfers = async (req, res, next) => {
+/**
+ * @api {get} /account/questions/:id
+ * @apiGroup Account
+ * @apiName GetAccountQuestionById
+ * @apiPermission all
+ * @apiParam {Number} id  ID user question
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Question
+ */
+const singleQuestion = async (req, res, next) => {
   const id = req.params.id;
   try {
-    const data = await ApplicationTransfer.findOne({
+    const question = await Questions.findOne({
       where: {
         id,
-        userId: req.userData.userId
+        user_id: req.user.user_id
       },
       include: [
-        { model: Uploads },
-        { model: Users, as: "ApplicationTransferSupplier" },
-        { model: Statuses }
+        { as: 'category', model: Categories, attributes: ['name'] },
+        { as: 'user', model: Users, attributes: ['username'] },
+        { as: 'answered_user', model: Users, attributes: ['username'] }
       ]
     });
 
-    if (!data) throw new ResponseException("Заявка не найдена", 400);
-
     res.status(200).json({
+      ok: true,
+      data: question
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @api {post} /account/questions
+ * @apiGroup Account
+ * @apiName AddQuestion
+ * @apiPermission all
+ * @apiParam {String} title Question title
+ * @apiParam {String} question Question description
+ * @apiParam {Boolean} question Question is private
+ * @apiParam {Number} category_id  Question category id
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Question
+ */
+const addQuestion = async (req, res, next) => {
+  const { title, question, is_private, category_id} = req.body;
+  try {
+
+    const data = await Questions.create({
+      title: latToCyr(title),
+      question: latToCyr(question),
+      status: statuses.PENDING,
+      is_private,
+      category_id,
+      user_id: req.user.user_id
+    });
+
+    res.status(201).json({
       ok: true,
       data
     });
   } catch (error) {
-    next(error)
-  }
-};
-
-const addTransfers = async (req, res, next) => {
-  const { text, upload_ids = [] } = req.body;
-
-  try {
-    const status = await Statuses.findOne({
-      where: {
-        code: "await"
-      }
-    });
-
-    if (!status) throw new ResponseException("Статус не найдена");
-
-    const data = await ApplicationTransfer.create({
-      userId: req.userData.userId,
-      text,
-      statusId: status.id
-    });
-
-    if (upload_ids.length !== 0) {
-      const uploads = await Uploads.findAll({
-        where: {
-          id: {
-            $in: upload_ids
-          }
-        }
-      });
-
-      await data.addUploads(uploads);
-    }
-
-    res.status(200).json({
-      ok: true
-    });
-  } catch (error) {
     next(error);
   }
-};
+}
 
-const updateTransfers = async (req, res, next) => {
-  const { text, upload_ids = [], delivered } = req.body;
+/**
+ * @api {put} /account/questions/:id
+ * @apiGroup Account
+ * @apiName UpdateAccountQuestionById
+ * @apiPermission all
+ * @apiParam {Number} id  Id user question
+ * @apiParam {String} title Question title
+ * @apiParam {String} question Question description
+ * @apiParam {Boolean} question Question is private
+ * @apiParam {Number} category_id  Question category id
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Question
+ */
+const updateQuestion = async (req, res, next) => {
   const id = req.params.id;
-
+  const { title, question, is_private, category_id} = req.body;
   try {
 
-    const data = await ApplicationTransfer.findOne({
+    const data = await Questions.findOne({
       where: {
         id,
-        userId: req.userData.userId
+        user_id: req.user.user_id
       }
     });
 
-    if(!data) throw new ResponseException('Заявка не найдена'); 
-
-    const deliveredStatus = await Statuses.findOne({
-      where: {
-        code: 'delivered'
-      }
-    });
-
-    if (delivered) data.statusId = deliveredStatus.id 
-
-    if (text) data.text = text
-
-    if (upload_ids.length !== 0) {
-      const uploads = await Uploads.findAll({
-        where: {
-          id: {
-            $in: upload_ids
-          }
-        }
-      });
-
-      await data.setUploads(uploads);
-    }
-
-    await data.save();
-
-    res.status(200).json({
-      ok: true
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const removeTransfers = async (req, res, next) => {
-  const id = req.params.id;
-
-  try {
-    const data = await ApplicationTransfer.findOne({
-      where: {
-        id,
-        userId: req.userData.userId
-      }
-    });
-    const cancelledStatus = await Statuses.findOne({
-      where: {
-        code: 'cancelled'
-      }
-    });
-
-    if (!data) throw new ResponseException('Заявка не найдена', 400)
-
-    data.statusId = cancelledStatus.id
+    if (data.status !== statuses.ANSWERED) {
+      if (title) data.title = latToCyr(title);
+      if (question) data.question = latToCyr(question);
+      if (is_private) data.is_private = is_private;
+      if (category_id) data.category_id = category_id;
+    } else throw new ResponseException("На вопрос уже отвечено", 400);
 
     await data.save()
 
+    res.status(202).json({
+      ok: true,
+      data
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @api {get} /account/answers/not-answers
+ * @apiGroup Account
+ * @apiName GetNotAnsweredQuestions
+ * @apiPermission MODERATOR
+ * @apiParam {Number} limit  Limit
+ * @apiParam {Number} page  Page number
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object[]} data  Questions List
+ */
+const notAnswers = async (req, res, next) => {
+  const { limit, page = 1, sorts } = req.query;
+
+  const columnsFilter = [
+    'is_private',
+    'category_id'
+  ];
+  
+  try {
+    const whereStatement = filter(req.query, columnsFilter);
+    whereStatement.status = statuses.PENDING;
+    whereStatement.answer = null;
+    const orderStatement = order(sorts);
+
+    const count = await Questions.count({
+      where: whereStatement
+    });
+    const offset = limit ? limit * (page - 1) : null;
+
+    const questions = await Questions.findAll({
+      where: whereStatement,
+      order: orderStatement,
+      limit,
+      offset,
+      include: [
+        { as: 'category', model: Categories, attributes: ['name'] },
+        { as: 'user', model: Users, attributes: ['username'] }
+      ]
+    });
+
+    res.status(200).json({
+      ok: true,
+      data: questions,
+      total_count: count
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @api {get} /account/answers/not-answers/:id
+ * @apiGroup Account
+ * @apiName GetNotAnsweredQuestionsById
+ * @apiPermission MODERATOR
+ * @apiParam {Number} id  Question id
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Question
+ */
+const notAnswersSingle = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    const question = await Questions.findOne({
+      where: {
+        id,
+        status: statuses.PENDING,
+        answered_user_id: null
+      },
+      include: [
+        { as: 'category', model: Categories, attributes: ['name'] },
+        { as: 'user', model: Users, attributes: ['username'] }
+      ]
+    });
+
+    res.status(200).json({
+      ok: true,
+      data: question
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @api {post} /account/answers/not-answers/:id
+ * @apiGroup Account
+ * @apiName SetAnsweredQuestionsById
+ * @apiPermission MODERATOR
+ * @apiParam {Number} id  Question id
+ * @apiParam {String} answer  Question answer
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Question
+ */
+const createAnswer = async (req, res, next) => {
+  const id = req.params.id;
+  const { answer } = req.body;
+  try {
+    if (!answer) throw new ResponseException("Название не найдена", 400);
+
+    const question = await Questions.findOne({
+      where: {
+        id,
+        status: statuses.PENDING,
+        answered_user_id: null
+      },
+      include: [
+        { as: 'category', model: Categories, attributes: ['name'] },
+        { as: 'user', model: Users, attributes: ['username'] }
+      ]
+    });
+
+    if (answer) {
+      question.answer = latToCyr(answer);
+      question.answered_user_id = req.user.user_id;
+    }
+
+    await question.save();
+
+    res.status(200).json({
+      ok: true,
+      data: question
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @api {get} /account/answers
+ * @apiGroup Account
+ * @apiName GetUserAnsweredQuestions
+ * @apiPermission MODERATOR
+ * @apiParam {Number} limit  Limit
+ * @apiParam {Number} page  Page number
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object[]} data  Questions List
+ */
+const answers = async (req, res, next) => {
+  const { limit, page = 1, sorts } = req.query;
+  
+  try {
+    const whereStatement = filter(req.query, columnsFilter);
+    whereStatement.status = statuses.ANSWERED;
+    whereStatement.answered_user_id = req.user.user_id;
+    const orderStatement = order(sorts);
+
+    const count = await Questions.count({
+      where: whereStatement
+    });
+    const offset = limit ? limit * (page - 1) : null;
+
+    const questions = await Questions.findAll({
+      where: whereStatement,
+      order: orderStatement,
+      limit,
+      offset,
+      include: [
+        { as: 'category', model: Categories, attributes: ['name'] },
+        { as: 'user', model: Users, attributes: ['username'] }
+      ]
+    });
+
+    res.status(200).json({
+      ok: true,
+      data: questions,
+      total_count: count
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+
+/**
+ * @api {get} /account/answers
+ * @apiGroup Account
+ * @apiName GetUserAnsweredQuestionById
+ * @apiPermission MODERATOR
+ * @apiParam {Number} id  ID user answered question
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Question
+ */
+const answersSingle = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    const question = await Questions.findOne({
+      where: {
+        id,
+        status: statuses.ANSWERED,
+        answered_user_id: req.user.user_id
+      },
+      include: [
+        { as: 'category', model: Categories, attributes: ['name'] },
+        { as: 'user', model: Users, attributes: ['username'] }
+      ]
+    });
+
+    res.status(200).json({
+      ok: true,
+      data: question
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @api {put} /account/answers/:id
+ * @apiGroup Account
+ * @apiName UpdateAccountAnswerById
+ * @apiPermission MODERATOR
+ * @apiParam {Number} id  Id user answered question
+ * @apiParam {String} answer  Question answer
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Question
+ */
+const updateAnswer = async (req, res, next) => {
+  const id = req.params.id;
+  const { answer } = req.body;
+  try {
+    if (!answer) throw new ResponseException("Название не найдена", 400);
+    const question = await Questions.findOne({
+      where: {
+        id,
+        status: statuses.ANSWERED,
+        answered_user_id: req.user.user_id
+      },
+      include: [
+        { as: 'category', model: Categories, attributes: ['name'] },
+        { as: 'user', model: Users, attributes: ['username'] }
+      ]
+    });
+
+    if (answer) {
+      question.answer = latToCyr(answer);
+    }
+
+    await question.save();
+
+    res.status(200).json({
+      ok: true,
+      data: question
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @api {delete} /account/answers/:id
+ * @apiGroup Account
+ * @apiName DeleteAccountAnswerById
+ * @apiPermission MODERATOR
+ * @apiParam {Number} id  Id user answered question
+ * @apiSuccess {Boolean} ok Response status
+ */
+const removeAnswer = async (req, res, next) => {
+  const id = req.params.id;
+  try {
+    const question = await Questions.findOne({
+      where: {
+        id,
+        status: statuses.ANSWERED,
+        answered_user_id: req.user.user_id
+      },
+      include: [
+        { as: 'category', model: Categories, attributes: ['name'] },
+        { as: 'user', model: Users, attributes: ['username'] }
+      ]
+    });
+
+    question.status = statuses.REMOVED;
+
+    await question.save();
+
     res.status(200).json({
       ok: true
     });
   } catch (error) {
     next(error);
   }
-};
+}
 
-router.get('/app-receives', allReceives);
-router.get('/app-receives/:id', singleReceives);
-router.put('/app-receives/:id', updateReceives);
-router.post('/app-receives/', addReceives);
-router.delete('/app-receives/:id', removeReceives);
-// -----------------------------------------------------
-router.get('/app-transfers', allTransfers);
-router.get('/app-transfers/:id', singleTransfers);
-router.put('/app-transfers/:id', updateTransfers);
-router.post('/app-transfers/', addTransfers);
-router.delete('/app-transfers/:id', removeTransfers);
+/**
+ * @api {get} /account/me
+ * @apiGroup Account
+ * @apiName GetAccountInfo
+ * @apiPermission all
+ * @apiParam {Number} id  Id user answered question
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Current User
+ * @apiSuccess {String} token  Refreshed token
+ */
+const me = async (req, res, next) => {
+  try {
+    const user = await Users.findOne({
+      attributes: ['id', 'username', 'email', 'phone', 'role'],
+      where: {
+        id: req.user.user_id
+      }
+    });
+
+    if(!user) new ResponseException('Пользовател не найдена', 400);
+
+    const refreshToken = await jwt.sign(
+      {
+        role: user.role,
+        user_id: user.id
+      },
+      config.SECRET_KEY,
+      { expiresIn: '7d' }
+    );
+
+    res.status(200).json({
+      ok: true,
+      data: user,
+      token: refreshToken
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * @api {put} /account/me
+ * @apiGroup Account
+ * @apiName UpdateAccountInfo
+ * @apiPermission all
+ * @apiParam {String} username  User name
+ * @apiParam {String} phone  User phone
+ * @apiParam {String} email  User email
+ * @apiParam {String} password  User old password
+ * @apiParam {String} newPassword  User new password
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Current User
+ * @apiSuccess {String} token  Refreshed token
+ */
+const meUpdate = async (req, res, next) => {
+  const { username, phone, email, password, newPassword } = req.body;
+  try {
+
+    const user = await Users.findOne({
+      where: {
+        id: req.user.user_id
+      }
+    });
+
+    const match = await bcrypt.compare(password, user.password)
+
+    if (match && newPassword) {
+      const hash = await bcrypt.hash(newPassword, 10)
+
+      user.password = hash
+    }
+
+    if (username) user.username = username
+    if (phone) user.phone = phone
+    if (email) user.email = email
+
+    await user.save()
+
+    res.status(202).json({
+      ok: true
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+router.get('/me', me);
+router.put('/me', meUpdate);
+
+router.get('/questions', allQuestions);
+router.get('/questions/:id', singleQuestion);
+router.post('/questions', addQuestion);
+router.put('/questions/:id', updateQuestion);
+
+router.get('/answers', isRole([roles.MODERATOR]), answers);
+router.get('/answers/:id', isRole([roles.MODERATOR]), answersSingle);
+router.put('/answers/:id', isRole([roles.MODERATOR]), updateAnswer);
+router.delete('/answers/:id', isRole([roles.MODERATOR]), removeAnswer);
+
+router.get('/answers/not-answers', isRole([roles.MODERATOR]), notAnswers);
+router.get('/answers/not-answers/:id', isRole([roles.MODERATOR]), notAnswersSingle);
+router.post('/answers/not-answers/:id', isRole([roles.MODERATOR]), createAnswer);
 
 
 module.exports = router;

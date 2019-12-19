@@ -52,6 +52,7 @@ server/.apdisk
 ### Node ###
 # Logs
 server/logs
+server/docs
 server/*.log
 server/npm-debug.log*
 server/yarn-debug.log*

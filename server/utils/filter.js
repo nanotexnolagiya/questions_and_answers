@@ -8,9 +8,9 @@ module.exports = (queries, columns) => {
         result[column] = {}
         const filterColumnValues = filterColumn[1].split(',')
         if (filterColumnValues.length > 1) {
-          result[column][`$${filterColumn[0]}`] = filterColumnValues
+          result[column][`${filterColumn[0]}`] = filterColumnValues
         } else {
-          result[column][`$${filterColumn[0]}`] = filterColumnValues[0]
+          result[column][`${filterColumn[0]}`] = filterColumnValues[0]
         }
       } else {
         result[column] = filterColumn[0]

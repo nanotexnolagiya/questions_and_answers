@@ -1,20 +1,44 @@
-## Download
+## Требования
+1. [Node.js](https://nodejs.org/en/download/)
+2. [PostgreSQL](https://www.postgresql.org/download/)
+
+## Клонирование
 ```bash
-git clone https://gitlab.com/korden-creative/ehson.git
+git clone https://github.com
+cd questions_and_answers
 ```
 
-## Install
-```bash
-cd ehson
-yarn install | npm install
-```
-
-## Remove .env file
+## Конфигурация серверной части
 ```bash
 mv .env .env.example
 ```
+Заполните поля в `.env` файле
 
-## Run
+## Установка и запуск серверной части
 ```bash
-yarn dev | npm run dev
+cd server
+yarn install
+yarn start
+```
+
+## Запуск серверной части в режиме разработки
+```bash
+yarn dev
+```
+
+## Установка и запуск клиентской части
+```bash
+cd client
+yarn install
+yarn start
+```
+
+## Сборка клиентской части
+```bash
+yarn build
+```
+
+## Запуск тестов
+```bash
+yarn test
 ```

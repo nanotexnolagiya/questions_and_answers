@@ -1,7 +1,7 @@
 {
-  "name": "open_hands",
+  "name": "questions_and_answers",
   "version": "0.1.0",
-  "description": "apiDoc open_hands",
-  "title": "Custom open_hands",
+  "description": "apiDoc questions_and_answers",
+  "title": "Questions and Answers",
   "url": "https://api.github.com/v1"
 }

@@ -8,11 +8,13 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER
       },
-      roleId: {
-        allowNull: false,
-        type: DataTypes.INTEGER
+      username: {
+        type: DataTypes.STRING,
+        allowNull: false
       },
-      name: DataTypes.STRING,
+      email: {
+        type: DataTypes.STRING
+      },
       phone: {
         allowNull: false,
         type: DataTypes.STRING,
@@ -21,24 +23,18 @@ module.exports = (sequelize, DataTypes) => {
       password: {
         allowNull: false,
         type: DataTypes.STRING
+      },
+      role: {
+        type: DataTypes.STRING,
+        allowNull: false
       }
     },
     {
-      scopes: {
-        userPublic: {
-          attributes: ['id', 'name', 'phone'],
-          include: [
-            { model: sequelize.models.Roles.scope('rolePublic') }
-          ]
-        }
-      },
+      freezeTableName: true,
+      tableName: "users"
     }
   )
   Users.associate = function(models) {
-    models.Users.belongsTo(models.Roles, {
-      foreignKey: 'roleId',
-      targetKey: 'id'
-    })
   }
   return Users
 }

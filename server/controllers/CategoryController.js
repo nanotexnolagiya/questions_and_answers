@@ -1,13 +1,26 @@
 const express = require('express')
 const router = express.Router()
-const { Categories, Properties } = require('../models')
+const { Categories } = require('../models')
 const getTree = require("../utils/tree");
+const isRole = require('../routes/middleware/isRole');
+const roles = require('../enums/roles');
+const latToCyr = require('../utils/latinToCyrilic');
 
+/**
+ * @api {get} /categories
+ * @apiGroup Categories
+ * @apiName GetAllCategories
+ * @apiPermission all
+ * @apiParam {Number} limit  Limit
+ * @apiParam {Number} page  Page number
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object[]} data  Categories
+ * @apiSuccess {Number} total_count  Total count
+ */
 const all = async (req, res, next) => {
   const { limit, page = 1 } = req.query;
   try {
     const count = await Categories.count();
-    const pages = limit ? Math.ceil(count / limit) : 0;
     const offset = limit ? limit * (page - 1) : null;
     const categories = await Categories.findAll({
       limit,
@@ -18,13 +31,39 @@ const all = async (req, res, next) => {
     res.status(200).json({
       ok: true,
       data: categories,
-      pageCount: pages
+      total_count: count
     });
   } catch (error) {
     next(error);
   }
 };
 
+const single = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const category = await Categories.findOne({
+      where: {
+        id
+      }
+    });
+
+    res.status(200).json({
+      ok: true,
+      data: category
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @api {get} /categories/tree
+ * @apiGroup Categories
+ * @apiName GetAllCategoriesTree
+ * @apiPermission all
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object[]} data  Categories Tree
+ */
 const tree = async (req, res, next) => {
   try {
     const categories = await Categories.findAll({
@@ -42,26 +81,48 @@ const tree = async (req, res, next) => {
   }
 };
 
+/**
+ * @api {post} /categories
+ * @apiGroup Categories
+ * @apiName CreateCategory
+ * @apiPermission ADMINISTRATOR
+ * @apiParam {String} name  Category name
+ * @apiParam {Number} parent  Parent category ID
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Created category
+ */
 const add = async (req, res, next) => {
-  const { name, parent = 0 } = req.body;
+  const { name, parent } = req.body;
   try {
     if (!name) throw new ResponseException("Название не найдена", 400);
 
-    await Categories.create(
+    const data = await Categories.create(
       {
-        name,
-        parentId: parent
+        name: latToCyr(name),
+        parent
       }
     );
 
     res.status(201).json({
-      ok: true
+      ok: true,
+      data
     });
   } catch (error) {
     next(error);
   }
 };
 
+/**
+ * @api {put} /categories/:id
+ * @apiGroup Categories
+ * @apiName UpdateCategory
+ * @apiPermission ADMINISTRATOR
+ * @apiParam {Number} id  Category id
+ * @apiParam {String} name  Category name
+ * @apiParam {Number} parent  Parent category ID
+ * @apiSuccess {Boolean} ok Response status
+ * @apiSuccess {Object} data  Created category
+ */
 const update = async (req, res, next) => {
   const { name, parent } = req.body;
   const id = req.params.id;
@@ -75,19 +136,28 @@ const update = async (req, res, next) => {
 
     if (!category) throw new ResponseException("Категория не найдена", 400);
 
-    if (name) category.name = name;
-    if (parent) category.parentId = parent;
+    if (name) category.name = latToCyr(name);
+    if (parent) category.parent = parent;
 
     await category.save();
 
     res.status(202).json({
-      ok: true
+      ok: true,
+      data: category
     });
   } catch (error) {
     next(error)
   }
 };
 
+/**
+ * @api {delete} /categories/:id
+ * @apiGroup Categories
+ * @apiName RemoveCategory
+ * @apiPermission ADMINISTRATOR
+ * @apiParam {Number} id  Category id
+ * @apiSuccess {Boolean} ok Response status
+ */
 const remove = async (req, res, next) => {
   const id = req.params.id;
 
@@ -106,35 +176,12 @@ const remove = async (req, res, next) => {
   }
 };
 
-const properties = async (req, res, next) => {
-  const id = req.params.id;
 
-  try {
-    const category = await Categories.findOne({
-      where: {
-        id
-      },
-      include: [
-        { model: Properties }
-      ]
-    });
+router.get('/', all);
+router.get('/:id', single);
+router.get('/tree', tree);
+router.post('/', isRole([roles.ADMINISTRATOR]), add);
+router.put('/:id', isRole([roles.ADMINISTRATOR]), update);
+router.delete('/:id', isRole([roles.ADMINISTRATOR]), remove);
 
-    if (!category) new ResponseException('Категория не найдена', 400);
-
-    res.status(200).json({
-      ok: true,
-      data: category.Properties
-    })
-  } catch (error) {
-    next(error);
-  }
-}
-
-router.get('/', all)
-router.get('/tree', tree)
-router.post('/', add)
-router.put('/:id', update)
-router.delete('/:id', remove)
-router.get('/:id/properties', properties)
-
-module.exports = router
+module.exports = router;

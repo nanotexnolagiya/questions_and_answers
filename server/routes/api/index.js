@@ -1,36 +1,29 @@
-const express = require('express')
-const router = express.Router()
-const checkAuth = require('../middleware/check-auth')
-const isRole = require('../middleware/isRole')
+const express = require('express');
+const router = express.Router();
+const checkAuth = require('../middleware/check-auth');
+const isRole = require('../../routes/middleware/isRole');
+const roles = require('../../enums/roles');
+const statuses = require('../../enums/status');
 const {
   AuthController,
-  ApplicationTransferController,
-  ApplicationReceiveController,
-  UploadController,
   CategoryController,
-  PropertyController,
-  ThingController,
   UserController,
-  RoleController,
-  StatusController,
   AccountController,
-  SupplierController
-} = require('../../controllers')
+  QuestionController,
+  SearchController
+} = require('../../controllers');
 
-router.use('/auth', AuthController)
+router.use('/auth', AuthController);
 
-router.use(checkAuth)
+router.use(checkAuth);
 
-router.use('/app-transfers', isRole(['admin']), ApplicationTransferController)
-router.use('/uploads', UploadController)
-router.use('/app-receives', isRole(['admin']), ApplicationReceiveController)
-router.use('/categories', CategoryController)
-router.use('/properties', isRole(['admin']), PropertyController)
-router.use('/users', UserController)
-router.use('/roles', isRole(['admin']), RoleController)
-router.use('/statuses', StatusController)
-router.use('/things', isRole(['admin', 'storekeeper']), ThingController)
-router.use('/account', AccountController)
-router.use('/supplier', SupplierController)
+router.get('/roles', isRole([roles.ADMINISTRATOR]), (_, res) => res.status(200).json({ ok: true, data: roles }))
+router.get('/statuses', isRole([roles.ADMINISTRATOR]), (_, res) => res.status(200).json({ ok: true, data: statuses }))
 
-module.exports = router
+router.use('/categories', CategoryController);
+router.use('/users', UserController);
+router.use('/account', AccountController);
+router.use('/search', SearchController);
+router.use('/questions', isRole([roles.ADMINISTRATOR]), QuestionController);
+
+module.exports = router;

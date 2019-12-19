@@ -8,21 +8,21 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         type: DataTypes.INTEGER
       },
-      name: DataTypes.STRING,
-      parentId: DataTypes.INTEGER
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      parent: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+      }
     },
-    {}
+    {
+      freezeTableName: true,
+      tableName: "categories"
+    }
   )
   Categories.associate = function(models) {
-    models.Categories.belongsToMany(models.Properties, {
-      through: models.CategoryProperties,
-      foreignKey: 'categoryId'
-    })
-
-    models.Categories.hasMany(models.Things, {
-      foreignKey: 'categoryId',
-      sourceKey: 'id'
-    })
   }
   return Categories
 }

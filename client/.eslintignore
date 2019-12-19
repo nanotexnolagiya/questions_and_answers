@@ -1,7 +1,0 @@
-/build/
-/build/assets/js/*.js
-/config/
-/dist/
-/*.js
-/test/unit/coverage/
-/src/components/**/*.

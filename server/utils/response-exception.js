@@ -1,11 +1,11 @@
 function ResponseException(message, status) {
   this.message = message;
-  this.status = status
-  // Use V8's native method if available, otherwise fallback
+  this.status = status;
+  
   if ("captureStackTrace" in Error)
-      Error.captureStackTrace(this, ResponseException);
+    Error.captureStackTrace(this, ResponseException);
   else
-      this.stack = (new Error()).stack;
+    this.stack = (new Error()).stack;
 }
 
 ResponseException.prototype = Object.create(Error.prototype);
