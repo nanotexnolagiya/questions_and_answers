@@ -1,78 +1,10 @@
 module.exports = (text) => {
-  const charConvertObj = {
-    A: 'А',
-    B: 'Б',
-    V: 'В',
-    G: 'Г',
-    D: 'Д',
-    Ye: 'Е',
-    Yo: 'Ё',
-    J: 'Ж',
-    C: '',
-    Z: 'З',
-    I: 'И',
-    Y: 'Й',
-    K: 'К',
-    C: 'К',
-    L: 'Л',
-    M: 'М',
-    N: 'Н',
-    O: 'О',
-    P: 'П',
-    R: 'Р',
-    S: 'С',
-    T: 'Т',
-    U: 'У',
-    F: 'Ф',
-    X: 'Х',
-    TS: 'Ц',
-    Ch: 'Ч',
-    Sh: 'Ш',
-    Q: 'Қ',
-    'G\'': 'Ғ',
-    'O\'': 'Ў',
-    H: 'Ҳ',
-    '\'': 'Ъ',
-    E: 'Э',
-    Yu: 'Ю',
-    Ya: 'Я',
-    a: 'а',
-    b: 'б',
-    v: 'в',
-    g: 'г',
-    d: 'д',
-    e: 'е',
-    yo: 'ё',
-    j: 'ж',
-    c: '',
-    z: 'з',
-    i: 'и',
-    y: 'й',
-    k: 'к',
-    c: 'к',
-    l: 'л',
-    m: 'м',
-    n: 'н',
-    o: 'о',
-    p: 'п',
-    r: 'р',
-    s: 'с',
-    t: 'т',
-    u: 'у',
-    f: 'ф',
-    x: 'х',
-    ts: 'ц',
-    ch: 'ч',
-    sh: 'ш',
-    q: 'қ',
-    'g\'': 'ғ',
-    'o\'': 'ў',
-    h: 'ҳ',
-    '\'': 'ъ',
-    yu: 'ю',
-    ya: 'я',
-  };
-
+  const charConvertObj = {A:"А",B:"Б",V:"В",G:"Г",D:"Д",Ye:"Е",Yo:"Ё",J:"Ж",C:"К",Z:"З",I:"И",Y:"Й",K:"К",L:"Л",M:"М",N:"Н",O:"О",P:"П",R:"Р",S:"С",T:"Т",U:"У",F:"Ф",X:"Х",TS:"Ц",Ch:"Ч",Sh:"Ш",Q:"Қ","G'":"Ғ","O'":"Ў",H:"Ҳ","'":"ъ",E:"Э",Yu:"Ю",Ya:"Я",a:"а",b:"б",v:"в",g:"г",d:"д",e:"е",yo:"ё",j:"ж",c:"к",z:"з",i:"и",y:"й",k:"к",l:"л",m:"м",n:"н",o:"о",p:"п",r:"р",s:"с",t:"т",u:"у",f:"ф",x:"х",ts:"ц",ch:"ч",sh:"ш",q:"қ","g'":"ғ","o'":"ў",h:"ҳ",yu:"ю",ya:"я"};
+  const ignoreStrings = {};
+  text = text.replace(/```(.*?)```/g, (_, text, offset) => {
+    ignoreStrings[offset] = text;
+    return `%${offset}%`;
+  });
   const charArr = text.split('');
   let result = '';
 
@@ -184,6 +116,8 @@ module.exports = (text) => {
     }
     
   });
-
+  Object.keys(ignoreStrings).forEach(key => {
+  	result = result.replace(`%${key}%`, ignoreStrings[key]);
+  });
   return result;
 }
