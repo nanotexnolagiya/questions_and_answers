@@ -19,7 +19,9 @@ const search = async (req, res, next) => {
   try {
     const questionsIds = {};
     const searchKeys = search.split(' ');
-    for (const key of searchKeys) {
+    for (let key of searchKeys) {
+      key = key.replace(/(lar|lari|ning|ni|da|dan)+\b/g, "");
+      
       let whereStatement = {
         is_private: false,
         title: {
